@@ -1,0 +1,142 @@
+<%# views/duplicateTrtacking.ejs %>
+
+    <% extend('layout') %>
+
+        <!--Main layout-->
+        <main style="margin-top: 58px;">
+            <div class="container-fluid pt-4">
+                <% if (messages.success || messages.error) { %>
+                    <p class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3"><%- messages.success ? messages.success : messages.error %></p>
+                    <% } %>
+                        <div class="card">
+                            <div class="card-header font-weight-bold">
+                                Order Ids Ignore List:
+                                <!-- Button trigger modal -->
+                                <a type="button" class="btn btn-sm btn-bg-blue text-white float-right"
+                                    data-toggle="modal" data-target="#exampleModal">
+                                    Add
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <% for (const val of orderIds) { %>
+                                            <div class="position-relative cross-btn">
+                                                <button class="btn btn-sm btn-outline-secondary">
+                                                    <%= val.orders_id %>
+                                                </button>
+                                                <a href="javascript:void()"
+                                                    onclick="deleteOrderIds('<%= val.orders_id %>')"><span
+                                                        class="position-absolute" aria-hidden="true">&times;</span></a>
+                                            </div>
+                                            <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mt-3">
+                            <div class="card-header font-weight-bold">
+                                Check Result : <%= name %>
+                                    <a href="/duplicate-tracking" class="btn btn-sm btn-bg-blue text-white">
+                                        Refresh
+                                    </a>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Tracking number</th>
+                                            <th scope="col">Order ID's</th>
+                                            <!-- <th scope="col">Count</th> -->
+                                            <th scope="col">Order numbers</th>
+                                            <th scope="col">Suppliers</th>
+                                            <th scope="col">City</th>
+                                            <th scope="col">Client</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if(reports.length> 0){ %>
+                                            <% for (var i=0; i < reports.length; i++) { %>
+                                                <tr>
+                                                    <th scope="row">
+                                                        <%= i+1 %>
+                                                    </th>
+                                                    <td>
+                                                        <%= reports[i][53] ? reports[i][53] : "N/A" ; %>
+                                                    </td>
+                                                    <td>
+                                                        <%= reports[i][1] ? reports[i][1] : "N/A" ; %>
+                                                    </td>
+                                                    <!-- <td></td> -->
+                                                    <td>
+                                                        <%= reports[i][3] ? reports[i][3] : "N/A" ; %>
+                                                    </td>
+                                                    <td>
+                                                        <%= reports[i][27] ? reports[i][27] : "N/A" ; %>
+                                                    </td>
+                                                    <td>
+                                                        <%= reports[i][39] ? reports[i][39] : "N/A" ; %>
+                                                    </td>
+                                                    <td>
+                                                        <%= reports[i][56] ? reports[i][56] : "N/A" ; %>
+                                                    </td>
+                                                </tr>
+                                                <% } }else{ %>
+                                                    <tr>
+                                                        <th scope="row" colspan="7" class="text-center"> Not Available
+                                                        </th>
+                                                    </tr>
+                                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+            </div>
+        </main>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form action="add_order_id" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Order Id</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="orderId">Order Id</label>
+                                <input type="number" required name="orders_id" class="form-control" id="orderId"
+                                    aria-describedby="orderHelp" placeholder="Enter Order Id">
+                                <small id="orderHelp" class="form-text text-muted">your Order Id will not check.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-bg-blue text-white">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function deleteOrderIds(orderId) {
+                swal({
+                    title: "Are you sure?",
+                    text: "Are you sure that you want to leave this page?",
+                    icon: "warning",
+                    dangerMode: true,
+                }).then(willDelete => {
+                    if (willDelete) {
+                        console.log(window.location.hostname)
+                        window.location.replace(window.location.origin + '/delete-order-id?orderId=' + orderId);
+                    }
+                });
+            }
+        </script>
+        <!--Main layout-->

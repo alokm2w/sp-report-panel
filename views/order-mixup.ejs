@@ -1,0 +1,175 @@
+<%# views/orderMixup.ejs %>
+
+    <% extend('layout') %>
+
+        <!--Main layout-->
+        <main style="margin-top: 58px;">
+            <div class="container-fluid pt-4">
+                <% if (messages.success || messages.error) { %>
+                    <p class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3" id="alertMessage">
+                        <%- messages.success ? messages.success : messages.error %>
+                    </p>
+                <% } %>
+                <div class="card">
+                    <div class="card-header font-weight-bold">
+                        Check Today Orders
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <a href="/no-tracking-added" class="btn btn-sm btn-bg-blue text-white">
+                                    Check No Tracking Added
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/no-supplier-added" class="btn btn-sm btn-bg-blue text-white">
+                                    Check No Supplier Added
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/short-tracking-number" class="btn btn-sm btn-bg-blue text-white">
+                                    Short Tracking Numbers
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/orders-not-quoted" class="btn btn-sm btn-bg-blue text-white">
+                                    Orders on Not quoted
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-3 text-center">
+                                <a href="/orders-on-hold" class="btn btn-sm btn-bg-blue text-white">
+                                    Orders On Hold
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/cost-added" class="btn btn-sm btn-bg-blue text-white">
+                                    Cost Added
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/missing-info" class="btn btn-sm btn-bg-blue text-white">
+                                    Missing Info
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/payment-pending" class="btn btn-sm btn-bg-blue text-white">
+                                    Payment Pending
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-3 text-center">
+                                <a href="/no-max-time" class="btn btn-sm btn-bg-blue text-white">
+                                    No Max time
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/no-date-of-payment" class="btn btn-sm btn-bg-blue text-white">
+                                    No Date of Payment
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/no-paid" class="btn btn-sm btn-bg-blue text-white">
+                                    No paid on paid by shop owner
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/tracking-number-added" class="btn btn-sm btn-bg-blue text-white">
+                                    Tracking Number Added
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-3 text-center">
+                                <a href="/in-transit-date-order-status" class="btn btn-sm btn-bg-blue text-white">
+                                    In-transit Date with Status
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/duplicates" class="btn btn-sm btn-bg-blue text-white">
+                                    Duplicates
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/in-transit-date-is-shipped" class="btn btn-sm btn-bg-blue text-white">
+                                    In-Transit Date with Is-Shipped
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="/orders-dump" class="btn btn-sm btn-bg-blue text-white">
+                                    orders Dump
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-3 text-center">
+                                <a href="/orders-missing" class="btn btn-sm btn-bg-blue text-white">
+                                    Missing order
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-header font-weight-bold">
+                        Check Result : <%= name %>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Tracking number</th>
+                                    <th scope="col">Order ID's</th>
+                                    <!-- <th scope="col">Count</th> -->
+                                    <th scope="col">Order numbers</th>
+                                    <th scope="col">Suppliers</th>
+                                    <th scope="col">City</th>
+                                    <th scope="col">Client</th>
+                                    <th scope="col">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if(reports.length> 0){ %>
+                                    <% for (var i=0; i < reports.length; i++) { %>
+                                        <tr>
+                                            <th scope="row">
+                                                <%= i+1 %>
+                                            </th>
+                                            <td>
+                                                <%= reports[i][53] ? reports[i][53] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][1] ? reports[i][1] : "N/A" ; %>
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <%= reports[i][3] ? reports[i][3] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][27] ? reports[i][27] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][39] ? reports[i][39] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][56] ? reports[i][56] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][60] ? reports[i][60] : "N/A" ; %>
+                                            </td>
+                                        </tr>
+                                        <% } }else{ %>
+                                            <tr>
+                                                <th scope="row" colspan="7" class="text-center"> Not Available</th>
+                                            </tr>
+                                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!--Main layout-->

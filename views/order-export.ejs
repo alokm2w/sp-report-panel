@@ -1,0 +1,60 @@
+<%# views/order-export.ejs %>
+    <% extend('layout') %>
+
+        <!--Main layout-->
+        <main style="margin-top: 58px;">
+            <div class="container-fluid pt-4">
+                <% if (messages.success || messages.error) { %>
+                    <p class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3" id="alertMessage">
+                        <%- messages.success ? messages.success : messages.error %>
+                    </p>
+                <% } %>
+                <div class="card">
+                    <div class="card-header">
+                        Featured
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5 class="card-title">Orders</h5>
+                                <a href="/api/convertcsv" class="btn btn-sm btn-bg-blue text-white">Generate
+                                    CSV</a>
+                                <% if (orderFileLink !='' ) { %>
+                                    <div class="card-text mt-4">
+                                        <p>file generated successfully link:</p>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" value="<%= orderFileLink %>.zip"
+                                                id="linkInput" readonly>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-primary" type="button"
+                                                    onclick="myFunction()">Copy link</button>
+                                            </div>
+                                        </div>
+                                        <p class="d-inline-block">or Download file:</p>
+                                        <a class="btn btn-sm btn-outline-primary"
+                                            href="/download-orders-list/<%= filename %>">Download</a>
+                                    </div>
+                                    <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script>
+            function myFunction() {
+                // Get the text field
+                var copyText = document.getElementById("linkInput");
+
+                // Select the text field
+                copyText.select();
+                copyText.setSelectionRange(0, 99999); // For mobile devices
+
+                // Copy the text inside the text field
+                navigator.clipboard.writeText(copyText.value);
+
+                // Alert the copied text
+                alert("Copied the text: " + copyText.value);
+            }
+        </script>
+        <!--Main layout-->
