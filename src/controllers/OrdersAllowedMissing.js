@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 var app = express();
-let csvToJson = require('convert-csv-to-json');
 const helpers = require('../../helpers/CommonHelpers')
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
@@ -13,7 +12,7 @@ module.exports = async (req, res) => {
 
         dbconn.query(sqlQueries.query.getAllStoresWithAllowedMissing, function (err, data) {
             if (err) throw err
-            
+
             data.length > 0 ? req.flash('success', 'Result Found!') : req.flash('error', 'Result Not Found!');
             res.render('stores-list', {
                 reports: data,

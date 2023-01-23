@@ -2,7 +2,6 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
 var app = express();
-const { convertCSVToArray } = require('convert-csv-to-array');
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
 const columnArr = require('../../helpers/columnArr');
