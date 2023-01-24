@@ -1,17 +1,27 @@
 const express = require('express');
 const app = express();
 const dbconn = require('../dbconnection');
-var session = require('express-session')
-var flash = require('express-flash')
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json());
-app.use(session({ secret: '123' }));
-app.use(flash());
+var session = require('express-session');
+var flash = require('express-flash');
 const convertcsv = require('../src/controllers/OrdersExport');
 const requestIp = require('request-ip');
-const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+const path = require('path');
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(flash());
+
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'static')));
+
 const OrdersDuplicateController = require('../src/controllers/OrdersDuplicateTracking');
 const NoTrackingController = require('../src/controllers/OrdersNoTrackingAdded');
 const NoSupplierController = require('../src/controllers/OrdersNoSupplierAdded');
@@ -36,43 +46,82 @@ const sqlQueries = require('../src/models/sql_queries');
 
 /* GET home page. */
 app.get('/', function (req, res, next) {
-  res.render('check-orders', {
-    reports: [],
-    name: "",
-  });
+  res.render('login');
 });
+
+app.post('/auth', function (req, res) {
+  // Capture the input fields
+  let username = req.body.username;
+  let password = req.body.password;
+  // Ensure the input fields exists and are not empty
+  if (username && password) {
+    // Execute SQL query that'll select the account from the database based on the specified username and password
+    dbconn.query(`SELECT * FROM users WHERE username = ? AND password = ?`, [username, password], function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) throw error;
+      // If the account exists
+      if (results.length > 0) {
+        // Authenticate the user and Redirect to dashboard page
+        req.session.loggedin = true;
+        req.session.username = username;
+        res.redirect('/dashboard');
+      } else {
+        req.flash('error', 'Incorrect Username or Password!');
+        res.redirect('/');
+      }
+      res.end();
+    });
+  } else {
+    req.flash('error', 'Please Enter Correct Credentials!');
+    res.redirect('/');
+    res.end();
+  }
+});
+
+function checkAuth(req, res, next) {
+  if (req.session.loggedin) {
+    next();
+  } else {
+    res.redirect('/');
+  }
+}
 
 // Routes
-app.get('/duplicate-tracking', OrdersDuplicateController.genOrdersList);
-app.get('/no-tracking-added', NoTrackingController);
-app.get('/no-supplier-added', NoSupplierController);
-app.get('/short-tracking-number', ShortTrackingController);
-app.get('/orders-not-quoted', OrdersNotQuoted);
-app.get('/orders-on-hold', OrdersOnHold);
-app.get('/cost-added', OrdersCostAdded);
-app.get('/missing-info', OrdersMissingInfo);
-app.get('/payment-pending', OrdersPaymentPending);
-app.get('/no-max-time', OrdersNoMaxTime);
-app.get('/no-date-of-payment', OrdersNoDateOfPayment);
-app.get('/no-paid', OrdersNoPaidOnPaidByShopOwner);
-app.get('/tracking-number-added', OrdersTrackingNumberAdded);
-app.get('/in-transit-date-order-status', OrdersInTransitDateWithStatus);
-app.get('/duplicates', OrdersDuplicate);
-app.get('/in-transit-date-is-shipped', OrdersInTransitDateIsShipped);
-app.get('/orders-dump', OrdersDump);
-app.get('/orders-missing', OrdersMissing);
-app.get('/order-mixup', OrdersMixup);
-app.get('/stores-list', OrdersAllowedMissing);
+app.get('/duplicate-tracking', checkAuth, OrdersDuplicateController.genOrdersList);
+app.get('/no-tracking-added', checkAuth, NoTrackingController)
+app.get('/no-supplier-added', checkAuth, NoSupplierController);
+app.get('/short-tracking-number', checkAuth, ShortTrackingController);
+app.get('/orders-not-quoted', checkAuth, OrdersNotQuoted);
+app.get('/orders-on-hold', checkAuth, OrdersOnHold);
+app.get('/cost-added', checkAuth, OrdersCostAdded);
+app.get('/missing-info', checkAuth, OrdersMissingInfo);
+app.get('/payment-pending', checkAuth, OrdersPaymentPending);
+app.get('/no-max-time', checkAuth, OrdersNoMaxTime);
+app.get('/no-date-of-payment', checkAuth, OrdersNoDateOfPayment);
+app.get('/no-paid', checkAuth, OrdersNoPaidOnPaidByShopOwner);
+app.get('/tracking-number-added', checkAuth, OrdersTrackingNumberAdded);
+app.get('/in-transit-date-order-status', checkAuth, OrdersInTransitDateWithStatus);
+app.get('/duplicates', checkAuth, OrdersDuplicate);
+app.get('/in-transit-date-is-shipped', checkAuth, OrdersInTransitDateIsShipped);
+app.get('/orders-dump', checkAuth, OrdersDump);
+app.get('/orders-missing', checkAuth, OrdersMissing);
+app.get('/order-mixup', checkAuth, OrdersMixup);
+app.get('/stores-list', checkAuth, OrdersAllowedMissing);
 
-
-app.get('/check-today-orders', function (req, res, next) {
-  res.render('check-orders', {
-    reports: [],
-    name: "",
-  });
+app.get('/dashboard', checkAuth,function (req, res) {
+  if (req.session.loggedin) {
+    res.render('check-orders', {
+      reports: [],
+      name: "",
+    });
+  }
+  else {
+    res.redirect('/');
+  }
+  res.end();
 });
 
-app.post('/add_order_id', function (req, res, next) {
+app.post('/add_order_id', checkAuth, function (req, res, next) {
   dbconn.query(`INSERT INTO filter_orderids (orders_id) VALUES ("${req.body.orders_id}")`, function (err, result) {
     if (err) throw err
     dbconn.query(sqlQueries.query.getOrdersIds, function (err, result) {
@@ -83,7 +132,7 @@ app.post('/add_order_id', function (req, res, next) {
   })
 })
 
-app.get('/delete-order-id', function (req, res) {
+app.get('/delete-order-id', checkAuth, function (req, res) {
   var sqlDeleteQuery = `DELETE FROM filter_orderids WHERE orders_id=${req.query.orderId}`;
   dbconn.query(sqlDeleteQuery, function (err, result) {
     if (err) throw err
@@ -92,7 +141,7 @@ app.get('/delete-order-id', function (req, res) {
   })
 });
 
-app.post('/update-missing-order', function (req, res) {
+app.post('/update-missing-order', checkAuth, function (req, res) {
   var sqlDeleteQuery = `UPDATE stores SET allowed_missing_orders = ${req.body.missingNumber} WHERE store_id = ${req.body.id}`;
   dbconn.query(sqlDeleteQuery, function (err, result) {
     if (err) throw err
@@ -102,7 +151,7 @@ app.post('/update-missing-order', function (req, res) {
 });
 
 // Orders List Page
-app.get("/orders-export", (req, res) => {
+app.get("/orders-export", checkAuth, (req, res) => {
   res.render('order-export', {
     title: 'Service Point',
     orderFileLink: '',
@@ -111,10 +160,10 @@ app.get("/orders-export", (req, res) => {
 });
 
 // export orders csv
-app.get('/api/convertcsv', convertcsv);
+app.get('/api/convertcsv', checkAuth, convertcsv);
 
 // download orders zip
-app.get('/download-orders-list/:filename?', function (req, res) {
+app.get('/download-orders-list/:filename?', checkAuth, function (req, res) {
   const file = `./ordersList/${req.params.filename}`;
   res.download(file);
 });
@@ -134,6 +183,16 @@ app.get('/download-orders', function (req, res) {
       res.send(`File Not Available:${storefilename}`);
     }
   }
+});
+
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(err) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect('/');
+    }
+  });
 });
 
 module.exports = app;

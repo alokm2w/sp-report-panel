@@ -15,7 +15,7 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 var rimraf = require("rimraf");
 require('dotenv').config();
-// process.env.TZ = 'Europe/Amsterdam'; //set timezone
+process.env.TZ = 'Europe/Amsterdam'; //set timezone
 
 app.engine('ejs', require('express-ejs-extend'));
 app.set('view engine', 'ejs');
@@ -113,8 +113,6 @@ function getOrdersCsvData(callback) {
                     return 0;
                   });
                 console.log('File Readed!', helpers.currentDateTime());
-                method.ordersMixup()
-                method.ordersDupTrackingNumber(dataArr)
                 method.orderCostAdded(dataArr)
                 method.orderDump(dataArr)
                 method.orderDuplicate(dataArr)
@@ -131,6 +129,8 @@ function getOrdersCsvData(callback) {
                 method.ordersPaymentPending(dataArr)
                 method.ordersShortTrackingNumber(dataArr)
                 method.ordersTrackingNumberAdded(dataArr)
+                method.ordersDupTrackingNumber(dataArr)
+                method.ordersMixup()
                 callback(null, 'Method Call Done!');
             })
             .on("error", function (error) {
@@ -142,9 +142,9 @@ function getOrdersCsvData(callback) {
     }
 }
 
-const methods = [exportcsv, getOrdersCsvData, method.ordersMissing, method.getStores];
+const methods = [getOrdersCsvData, method.ordersMissing, method.getStores];
 
-cron.schedule('00 10 19 * * *', () => {
+cron.schedule('00 28 14 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);

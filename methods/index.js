@@ -341,59 +341,100 @@ function ordersTrackingNumberAdded(dataArr) {
     }
 }
 
-function ordersDupTrackingNumber(a) {
+// function ordersDupTrackingNumber(a) {
+//     try {
+//         TrackingIndex = 53
+//         AddressIndex = 37
+//         CityIndex = 39
+//         ClientIndex = 56
+//         OrderIdIndex = 1
+
+//         let found = []
+//         let dup = {}
+
+//         console.log('start execution ordersDupTrackingNumber', helpers.currentDateTime());
+//         for (let i = 0; i < a.length; i++) {
+//             if (a[i][TrackingIndex] != "") {
+
+//                 for (let j = i + 1; j < a.length; j++) {
+//                     if (a[i][TrackingIndex] === a[j][TrackingIndex] && !found.includes(j) && a[i][CityIndex] !== a[j][CityIndex] && a[i][AddressIndex] !== a[j][AddressIndex] && a[i][ClientIndex] !== a[j][ClientIndex]) {
+//                         if (i in dup) {
+//                             found.push(j)
+//                             dup[i].push(a[j])
+//                         } else {
+//                             dup[i] = []
+//                             found.push(i)
+//                             found.push(j)
+//                             dup[i].push(a[i])
+//                             dup[i].push(a[j])
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         result = [];
+//         i = 0;
+//         for (const item of Object.keys(dup)) {
+//             const capital = dup[item];
+//             for (const duptackorders of capital) {
+//                 result[i] = duptackorders;
+//                 i++
+//             }
+//         }
+
+//         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+//         fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
+//         console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
+
+//     } catch (error) {
+//         console.log(`Something went wrong! ${error}`)
+//     }
+// }
+
+function ordersDupTrackingNumber(orders) {
     try {
-        TrackingIndex = 53
-        AddressIndex = 37
-        CityIndex = 39
-        ClientIndex = 56
-        OrderIdIndex = 1
+        const trackingIndex = 53;
+        const addressIndex = 37;
+        const cityIndex = 39;
+        const clientIndex = 56;
+        const orderIdIndex = 1;
 
-        let found = []
-        let dup = {}
+        const duplicates = {};
 
-        console.log('start execution ordersDupTrackingNumber', helpers.currentDateTime());
-        for (let i = 0; i < a.length; i++) {
-            if (a[i][TrackingIndex] != "") {
-
-                for (let j = i + 1; j < a.length; j++) {
-                    if (a[i][TrackingIndex] === a[j][TrackingIndex] && !found.includes(j) && a[i][CityIndex] !== a[j][CityIndex] && a[i][AddressIndex] !== a[j][AddressIndex] && a[i][ClientIndex] !== a[j][ClientIndex]) {
-                        if (i in dup) {
-                            found.push(j)
-                            dup[i].push(a[j])
-                        } else {
-                            dup[i] = []
-                            found.push(i)
-                            found.push(j)
-                            dup[i].push(a[i])
-                            dup[i].push(a[j])
-                        }
-                    }
+        // get duplicate tracking ids record
+        orders.forEach((order, i) => {
+            if (order[trackingIndex]) {
+                const matchingOrders = orders.slice(i + 1).filter(o => o[trackingIndex] === order[trackingIndex] && o[addressIndex] !== order[addressIndex] && o[cityIndex] !== order[cityIndex] && o[clientIndex] !== order[clientIndex]);
+                if (matchingOrders.length) {
+                    duplicates[order[orderIdIndex]] = [order, ...matchingOrders];
                 }
             }
-        }
+        });
 
-        result = [];
-        i = 0;
-        for (const item of Object.keys(dup)) {
-            const capital = dup[item];
-            for (const duptackorders of capital) {
-                result[i] = duptackorders;
-                i++
-            }
-        }
+        // filter duplicate records
+        var duplicateTrackArr = [];
+        j = 0;
+        Object.values(duplicates).forEach(element => {
+            element.forEach(el => {
+                is_exist = duplicateTrackArr.find(innerItem => innerItem[0] == el[0]);
+                if (is_exist == undefined) {
+                    duplicateTrackArr[j] = el;
+                    j++;
+                }
+            });
+        });
 
-        const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+        const csvData = duplicateTrackArr.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
-        console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
-
+        console.log('findDuplicateOrders Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        console.log(`Something went wrong! ${error}`)
+        if (error) console.log(error);
     }
 }
 
 function getStores() {
-
+    
     dbconn2.query(sqlQueries.query.getStores, function (err, data) {
         if (err) throw err
 
