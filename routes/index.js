@@ -13,9 +13,12 @@ app.use(express.json());
 app.use(flash());
 
 app.use(session({
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 2 * 60 * 60 * 1000 // 2 hours
+    }
 }));
 
 app.use(express.json());

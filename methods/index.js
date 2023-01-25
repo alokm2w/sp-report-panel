@@ -141,36 +141,43 @@ function ordersMissing(callback) {
                     groupedData[key] = groupedData[key].map(val => Number(val.match(/\d+/g)))
                 });
 
-                dbconn.query(sqlQueries.query.getAllowedMissingOrders, function (err, storesArr) {
-                    if (err) throw err
+                dbconn.getConnection((err, connection) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    console.log('Connection Established Successfully');
+                    // use the connection
+                    connection.query(sqlQueries.query.getAllowedMissingOrders, function (err, storesArr) {
+                        connection.release();
+                        MissingOrders = []
+                        i = 0
+                        for (const store of Object.keys(groupedData)) {
+                            uniqueorderNum = CommonHelpers.removeDuplicateVal(groupedData[store])
 
-                    MissingOrders = []
-                    i = 0
-                    for (const store of Object.keys(groupedData)) {
-                        uniqueorderNum = CommonHelpers.removeDuplicateVal(groupedData[store])
+                            min = Math.min(...uniqueorderNum);
+                            max = Math.max(...uniqueorderNum);
 
-                        min = Math.min(...uniqueorderNum);
-                        max = Math.max(...uniqueorderNum);
+                            missingOrderNums = []
+                            j = 0
+                            for (let index = min; index < max; index++) {
+                                if (!uniqueorderNum.includes(index)) {
+                                    missingOrderNums[j] = index;
+                                    j++
+                                }
+                            }
 
-                        missingOrderNums = []
-                        j = 0
-                        for (let index = min; index < max; index++) {
-                            if (!uniqueorderNum.includes(index)) {
-                                missingOrderNums[j] = index;
-                                j++
+                            let obj = storesArr.find(el => el.store_name == store);
+                            allowedMissing = obj != undefined ? obj.allowed_missing_orders : 0;
+                            if (uniqueorderNum.length > 1 && missingOrderNums.length > 0 && missingOrderNums.length > allowedMissing) {
+                                MissingOrders[i] = [store, max - min, missingOrderNums.length, min, max, missingOrderNums]
+                                i++
                             }
                         }
-
-                        let obj = storesArr.find(el => el.store_name == store);
-                        allowedMissing = obj != undefined ? obj.allowed_missing_orders : 0;
-                        if (uniqueorderNum.length > 1 && missingOrderNums.length > 0 && missingOrderNums.length > allowedMissing) {
-                            MissingOrders[i] = [store, max - min, missingOrderNums.length, min, max, missingOrderNums]
-                            i++
-                        }
-                    }
-                    const csvData = MissingOrders.map(d => d.join(';')).join('\n').replace(/"/g, "'");
-                    fs.writeFileSync('./public/checksList/ordersMissing.csv', csvData);
-                    console.log('Orders Missing Done!', CommonHelpers.currentDateTime());
+                        const csvData = MissingOrders.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+                        fs.writeFileSync('./public/checksList/ordersMissing.csv', csvData);
+                        console.log('Orders Missing Done!', CommonHelpers.currentDateTime());
+                    })
                 })
             })
     } catch (error) {
@@ -436,10 +443,9 @@ function ordersDupTrackingNumber(orders) {
 }
 
 function getStores(callback) {
-    console.log('start get store', CommonHelpers.currentDateTime());
     try {
+        console.log('start get store', CommonHelpers.currentDateTime());
         dbconn2.query(sqlQueries.query.getStores, function (err, data) {
-            if (err) throw err
 
             data.forEach(function (val, i) {
                 dbconn.query(`SELECT id FROM stores where store_id = ${val.id}`, function (err, results, fields) {
@@ -457,13 +463,12 @@ function getStores(callback) {
                 });
             })
             console.log('Get Store Done!');
-        })
+        });
     } catch (error) {
         if (error) console.log(error);
     } finally {
         callback(null, 'Get Store Done!');
     }
-
 }
 
 function ordersMixup(callback) {

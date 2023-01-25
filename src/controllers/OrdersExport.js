@@ -12,12 +12,16 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 module.exports = async (req, res) => {
     try {
-        var sqlQuery = sql_queries.query.get_orders_detail;
-        console.log('start fetching records', helpers.currentDateTime())
-        dbconn.query(sqlQuery, async function (error, data, fields) {
-            if (error) {
-                throw error;
-            } else {
+        console.log('start fetching records', helpers.currentDateTime());
+        dbconn.getConnection((err, connection) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log('Connection Established Successfully');
+            // use the connection
+            connection.query(sql_queries.query.get_orders_detail, async function (error, data, fields) {
+                connection.release();
                 console.log('start execution', helpers.currentDateTime());
                 var filename = 'ordersList_today';
                 // var filename = 'OrdersList_' + helpers.currentDateTime();
@@ -64,23 +68,11 @@ module.exports = async (req, res) => {
                     // convert to zip
                     helpers.genCsvToZip(zipFileDir, filename)
                 }
-
-                if (result.length > 0) {
-                    req.flash('success', 'Result Found!')
-                } else {
-                    req.flash('error', 'Result Not Found!')
-                }
-
+                req.flash('success', 'Result Found!')
                 res.redirect('/')
-                // res.render('/', {
-                //     title: 'service point',
-                //     filename: `${filename}.zip`,
-                //     orderFileLink: `${process.env.APPURL}/download-orders-list/${filename}`,
-                // });
-            }
+            });
         });
     } catch (error) {
         res.status(500).send(`Something went wrong! ${error}`)
     }
-
 };
