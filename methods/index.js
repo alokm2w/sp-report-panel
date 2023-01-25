@@ -174,7 +174,7 @@ function ordersMissing(callback) {
                 })
             })
     } catch (error) {
-        res.status(500).send(`Something went wrong! ${error}`)
+        console.log(`Something went wrong! ${error}`)
     } finally {
         callback(null, 'Orders Missing Done!');
     }
