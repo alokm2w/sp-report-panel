@@ -8,17 +8,18 @@ const requestIp = require('request-ip');
 const fs = require('fs');
 require('dotenv').config();
 const path = require('path');
+const argon2 = require('argon2');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(flash());
 
 app.use(session({
-    secret: 'secret',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        maxAge: 2 * 60 * 60 * 1000 // 2 hours
-    }
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 2 * 60 * 60 * 1000 // 2 hours
+  }
 }));
 
 app.use(express.json());
@@ -54,12 +55,17 @@ app.post('/auth', function (req, res) {
   let password = req.body.password;
   // Ensure the input fields exists and are not empty
   if (username && password) {
+
     // Execute SQL query that'll select the account from the database based on the specified username and password
-    dbconn.query(`SELECT * FROM users WHERE username = ? AND password = ?`, [username, password], function (error, results, fields) {
-      // If there is an issue with the query, output the error
+    dbconn.query(`SELECT * FROM users WHERE username = ? `, [username], async function (error, results, fields) {
       if (error) throw error;
+
+      // Verify the password with argon2
+      const hash = result.rows[0].password;
+      const match = await argon2.verify(hash, password);
+
       // If the account exists
-      if (results.length > 0) {
+      if (results.length > 0 && match) {
         // Authenticate the user and Redirect to dashboard page
         req.session.loggedin = true;
         req.session.username = username;

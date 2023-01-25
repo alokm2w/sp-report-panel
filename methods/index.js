@@ -123,7 +123,7 @@ function ordersInTransitDateWithStatus(dataArr) {
     }
 }
 
-function ordersMissing(callback) {
+function ordersMissing() {
     try {
         var filename = process.env.FILENAME_RECENT;
         console.log('start execution ordersMissing', CommonHelpers.currentDateTime());
@@ -182,8 +182,6 @@ function ordersMissing(callback) {
             })
     } catch (error) {
         console.log(`Something went wrong! ${error}`)
-    } finally {
-        callback(null, 'Orders Missing Done!');
     }
 }
 
@@ -471,7 +469,7 @@ function getStores(callback) {
     }
 }
 
-function ordersMixup(callback) {
+function ordersMixup() {
     try {
         console.log('start execution ordersMixup', helpers.currentDateTime());
 
@@ -575,8 +573,6 @@ function ordersMixup(callback) {
         });
     } catch (error) {
         console.log(`Something went wrong! ${error}`)
-    } finally {
-        callback(null, 'Order Mixup Done!');
     }
 }
 
