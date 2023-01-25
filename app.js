@@ -142,9 +142,9 @@ function getOrdersCsvData(callback) {
     }
 }
 
-const methods = [getOrdersCsvData, method.ordersMissing, method.getStores];
+const methods = [exportcsv, getOrdersCsvData, method.ordersMissing, method.getStores];
 
-cron.schedule('00 00 01 * * *', () => {
+cron.schedule('00 07 06 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);

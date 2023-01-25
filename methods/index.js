@@ -123,7 +123,7 @@ function ordersInTransitDateWithStatus(dataArr) {
     }
 }
 
-function ordersMissing() {
+function ordersMissing(callback) {
     try {
         var filename = process.env.FILENAME_RECENT;
         console.log('start execution ordersMissing', CommonHelpers.currentDateTime());
@@ -175,6 +175,8 @@ function ordersMissing() {
             })
     } catch (error) {
         res.status(500).send(`Something went wrong! ${error}`)
+    } finally {
+        callback(null, 'Orders Missing Done!');
     }
 }
 
@@ -433,28 +435,35 @@ function ordersDupTrackingNumber(orders) {
     }
 }
 
-function getStores() {
+function getStores(callback) {
     console.log('start get store', CommonHelpers.currentDateTime());
-    dbconn2.query(sqlQueries.query.getStores, function (err, data) {
-        if (err) throw err
+    try {
+        dbconn2.query(sqlQueries.query.getStores, function (err, data) {
+            if (err) throw err
 
-        data.forEach(function (val, i) {
-            dbconn.query(`SELECT id FROM stores where store_id = ${val.id}`, function (err, results, fields) {
-                if (err) throw err;
+            data.forEach(function (val, i) {
+                dbconn.query(`SELECT id FROM stores where store_id = ${val.id}`, function (err, results, fields) {
+                    if (err) throw err;
 
-                if (results.length > 0) {
-                    CreateOrUpdate = `UPDATE stores SET store_name = '${val.name}', is_deleted = '${val.is_deleted}' WHERE store_id = '${val.id}'`;
-                } else {
-                    CreateOrUpdate = `INSERT INTO stores (store_id, store_name, is_deleted) VALUES ('${val.id}', '${val.name}', '${val.is_deleted}')`;
-                }
+                    if (results.length > 0) {
+                        CreateOrUpdate = `UPDATE stores SET store_name = '${val.name}', is_deleted = '${val.is_deleted}' WHERE store_id = '${val.id}'`;
+                    } else {
+                        CreateOrUpdate = `INSERT INTO stores (store_id, store_name, is_deleted) VALUES ('${val.id}', '${val.name}', '${val.is_deleted}')`;
+                    }
 
-                dbconn.query(CreateOrUpdate, function (err, data2) {
-                    if (err) console.log(err);
-                })
-            });
+                    dbconn.query(CreateOrUpdate, function (err, data2) {
+                        if (err) console.log(err);
+                    })
+                });
+            })
+            console.log('Get Store Done!');
         })
-        console.log('Get Store Done!');
-    })
+    } catch (error) {
+        if (error) console.log(error);
+    } finally {
+        callback(null, 'Get Store Done!');
+    }
+
 }
 
 function ordersMixup() {
