@@ -466,7 +466,7 @@ function getStores(callback) {
 
 }
 
-function ordersMixup() {
+function ordersMixup(callback) {
     try {
         console.log('start execution ordersMixup', helpers.currentDateTime());
 
@@ -570,6 +570,8 @@ function ordersMixup() {
         });
     } catch (error) {
         console.log(`Something went wrong! ${error}`)
+    } finally {
+        callback(null, 'Order Mixup Done!');
     }
 }
 

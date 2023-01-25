@@ -130,7 +130,6 @@ function getOrdersCsvData(callback) {
                 method.ordersShortTrackingNumber(dataArr)
                 method.ordersTrackingNumberAdded(dataArr)
                 method.ordersDupTrackingNumber(dataArr)
-                method.ordersMixup()
                 callback(null, 'Method Call Done!');
             })
             .on("error", function (error) {
@@ -142,7 +141,7 @@ function getOrdersCsvData(callback) {
     }
 }
 
-const methods = [exportcsv, getOrdersCsvData, method.ordersMissing, method.getStores];
+const methods = [exportcsv, getOrdersCsvData, method.ordersMissing, method.getStores, method.ordersMixup];
 
 cron.schedule('00 07 06 * * *', () => {
     async.series(methods, (err, results) => {
