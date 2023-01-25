@@ -44,11 +44,7 @@ const OrdersMissing = require('../src/controllers/OrdersMissing');
 const OrdersMixup = require('../src/controllers/OrdersMixup');
 const sqlQueries = require('../src/models/sql_queries');
 
-/* GET home page. */
-app.get('/', function (req, res, next) {
-  res.render('login');
-});
-
+// Login Method
 app.post('/auth', function (req, res) {
   // Capture the input fields
   let username = req.body.username;
@@ -78,6 +74,16 @@ app.post('/auth', function (req, res) {
   }
 });
 
+/* GET home page. */
+app.get('/', function (req, res, next) {
+  if (!req.session.loggedin) {
+    res.render('login');
+  } else {
+    res.redirect('/dashboard');
+  }
+});
+
+// check user logged In or Not
 function checkAuth(req, res, next) {
   if (req.session.loggedin) {
     next();
@@ -108,7 +114,7 @@ app.get('/orders-missing', checkAuth, OrdersMissing);
 app.get('/order-mixup', checkAuth, OrdersMixup);
 app.get('/stores-list', checkAuth, OrdersAllowedMissing);
 
-app.get('/dashboard', checkAuth,function (req, res) {
+app.get('/dashboard', checkAuth, function (req, res) {
   if (req.session.loggedin) {
     res.render('check-orders', {
       reports: [],
@@ -185,8 +191,8 @@ app.get('/download-orders', function (req, res) {
   }
 });
 
-app.get('/logout', function(req, res) {
-  req.session.destroy(function(err) {
+app.get('/logout', function (req, res) {
+  req.session.destroy(function (err) {
     if (err) {
       console.log(err);
     } else {

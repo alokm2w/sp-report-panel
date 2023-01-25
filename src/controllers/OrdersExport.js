@@ -81,8 +81,6 @@ module.exports = async (req, res) => {
         });
     } catch (error) {
         res.status(500).send(`Something went wrong! ${error}`)
-    } finally {
-        dbconn.release();
     }
 
 };

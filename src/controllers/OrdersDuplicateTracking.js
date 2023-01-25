@@ -39,8 +39,6 @@ async function genOrdersList(req, res, next) {
     })
   } catch (error) {
     res.status(500).send(`Something went wrong! ${error}`)
-  } finally {
-    dbconn.release();
   }
 
 }
