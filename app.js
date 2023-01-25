@@ -34,60 +34,73 @@ var server = app.listen(5000, () => {
 var filename = process.env.FILENAME_RECENT;
 
 function exportcsv(callback) {
-    var sqlQuery = sql_queries.query.get_orders_detail;
-    console.log('start fetching records', helpers.currentDateTime())
-    dbconn2.query(sqlQuery, async function (error, data, fields) {
-        if (error) {
-            throw error;
-        } else {
-            console.log('start execution', helpers.currentDateTime());
-            var filename = 'ordersList_today';
-            const zipFileDir = './ordersList';
-
-            // delete ordersList dir
-            rimraf(zipFileDir, function () {
-                // create directory
-                const dir = './ordersTodaycsv'
-                if (!fs.existsSync(dir)) {
-                    fs.mkdirSync(dir);
+    try {
+        dbconn2.getConnection((err, connection) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log('Connection Established Successfully');
+            console.log('start fetching records', helpers.currentDateTime());
+            // use the connection
+            connection.query(sql_queries.query.get_orders_detail, async function (error, data, fields) {
+                if (err) {
+                    console.log(err);
+                    return;
                 }
+                connection.release();
+                console.log('start execution', helpers.currentDateTime());
+                var filename = 'ordersList_today';
+                const zipFileDir = './ordersList';
 
-                const currentPath = `./ordersTodaycsv/ordersList_today.csv`;
-                const destinationPath = "./ordersYesterdaycsv/ordersList_yeterday.csv";
-
-                fs.rename(currentPath, destinationPath, function (err) {
-                    if (err) {
-                        throw err
-                    } else {
-                        console.log("Successfully moved the file!", helpers.currentDateTime());
+                // delete ordersList dir
+                rimraf(zipFileDir, function () {
+                    // create directory
+                    const dir = './ordersTodaycsv'
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir);
                     }
+
+                    const currentPath = `./ordersTodaycsv/ordersList_today.csv`;
+                    const destinationPath = "./ordersYesterdaycsv/ordersList_yeterday.csv";
+
+                    fs.rename(currentPath, destinationPath, function (err) {
+                        if (err) {
+                            throw err
+                        } else {
+                            console.log("Successfully moved the file!", helpers.currentDateTime());
+                        }
+                    });
+
+                    // execute generate csv
+                    genrateCSV()
                 });
 
-                // execute generate csv
-                genrateCSV()
-            });
+                const csvWriter = createCsvWriter({
+                    path: `ordersTodaycsv/ordersList_today.csv`,
+                    header: helpers.csvHeaderArr,
+                    fieldDelimiter: ';'
+                });
 
-            const csvWriter = createCsvWriter({
-                path: `ordersTodaycsv/ordersList_today.csv`,
-                header: helpers.csvHeaderArr,
-                fieldDelimiter: ';'
-            });
+                async function genrateCSV() {
+                    console.log('start generating csv', helpers.currentDateTime());
+                    const csvArr = helpers.genOrdersArr(data)
+                    const chunkSize = 500000;
+                    for (let i = 0; i < csvArr.length; i += chunkSize) {
+                        const chunk = csvArr.slice(i, i + chunkSize);
+                        await csvWriter.writeRecords(chunk)
+                    }
 
-            async function genrateCSV() {
-                console.log('start generating csv', helpers.currentDateTime());
-                const csvArr = helpers.genOrdersArr(data)
-                const chunkSize = 500000;
-                for (let i = 0; i < csvArr.length; i += chunkSize) {
-                    const chunk = csvArr.slice(i, i + chunkSize);
-                    await csvWriter.writeRecords(chunk)
+                    // convert to zip
+                    helpers.genCsvToZip(zipFileDir, filename)
+                        .then(callback(null, 'csv generated'))
                 }
 
-                // convert to zip
-                helpers.genCsvToZip(zipFileDir, filename)
-                    .then(callback(null, 'csv generated'))
-            }
-        }
-    })
+            })
+        })
+    } catch (error) {
+        console.log(error.message);
+    }
 }
 
 dataArr = [];
@@ -105,13 +118,13 @@ function getOrdersCsvData(callback) {
                 StoreName = 6;
                 dataArr.sort((a, b) => {
                     if (a.StoreName < b.StoreName) {
-                      return -1;
+                        return -1;
                     }
                     if (a.StoreName > b.StoreName) {
-                      return 1;
+                        return 1;
                     }
                     return 0;
-                  });
+                });
                 console.log('File Readed!', helpers.currentDateTime());
                 method.orderCostAdded(dataArr)
                 method.orderDump(dataArr)
@@ -146,7 +159,7 @@ function getOrdersCsvData(callback) {
 
 const methods = [exportcsv, getOrdersCsvData];
 
-cron.schedule('00 55 11 * * *', () => {
+cron.schedule('00 34 13 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);

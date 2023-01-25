@@ -440,7 +440,7 @@ function ordersDupTrackingNumber(orders) {
     }
 }
 
-function getStores(callback) {
+function getStores() {
     try {
         console.log('start get store', CommonHelpers.currentDateTime());
         dbconn2.query(sqlQueries.query.getStores, function (err, data) {
@@ -464,8 +464,6 @@ function getStores(callback) {
         });
     } catch (error) {
         if (error) console.log(error);
-    } finally {
-        callback(null, 'Get Store Done!');
     }
 }
 
