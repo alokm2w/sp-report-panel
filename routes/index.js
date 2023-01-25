@@ -57,18 +57,16 @@ app.post('/auth', function (req, res) {
   if (username && password) {
 
     // Execute SQL query that'll select the account from the database based on the specified username and password
-    dbconn.query(`SELECT * FROM users WHERE username = ? `, [username], async function (error, results, fields) {
+    dbconn.query(`SELECT password FROM users WHERE username = ? `, [username], async function (error, results, fields) {
       if (error) throw error;
-
       // Verify the password with argon2
-      const hash = result.rows[0].password;
+      const hash = results[0].password;
       const match = await argon2.verify(hash, password);
 
       // If the account exists
       if (results.length > 0 && match) {
         // Authenticate the user and Redirect to dashboard page
         req.session.loggedin = true;
-        req.session.username = username;
         res.redirect('/dashboard');
       } else {
         req.flash('error', 'Incorrect Username or Password!');
