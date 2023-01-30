@@ -559,6 +559,11 @@ function ordersMixup() {
                         (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product variant changed," : ordertocheck[60] += "Product variant changed,";
                         changedData.push(ordertocheck);
                     }
+                    //Status cancelled
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && item[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled') {
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Order status cancelled," : ordertocheck[60] += "Order status cancelled,";
+                        changedData.push(ordertocheck);
+                    }
                 })
 
                 // remove null data
