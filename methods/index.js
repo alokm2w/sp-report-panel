@@ -49,7 +49,7 @@ function orderDump(dataArr) {
         storeWithAvgOrders = [];
         for (const store of Object.entries(groupedData)) {
             if (store[0] != "") {
-                sorted = store[1].filter(val => CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) >= CommonHelpers.getBackDate(6))
+                sorted = store[1].filter(val => val[columnArr.ColumnIndex.OrderCreatedDate] != "" && CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) >= CommonHelpers.getBackDate(6))
                 avgOrder = sorted.length / 7;
                 storeWithAvgOrders[i] = [store[0], sorted.length, avgOrder.toFixed(2), `https://${store[0]}.myshopify.com/admin/orders`]
                 i++
@@ -83,7 +83,10 @@ function orderDuplicate(dataArr) {
         let newData = []
         for (let i = 0; i < duplicateArr.length; i++) {
             for (let j = 0; j < duplicateArr[i].length; j++) {
-                newData.push(duplicateArr[i][j])
+                status_arr=['fulfilled', 'cancelled'];
+                if(!status_arr.includes(duplicateArr[i][j][columnArr.ColumnIndex.OrderStatus])){
+                    newData.push(duplicateArr[i][j]);
+                }
             }
         }
         const ws = fs.createWriteStream('./public/checksList/ordersDuplicate.csv');
@@ -138,7 +141,7 @@ function ordersMissing() {
                 var StoreName = 6;
                 const groupedData = _.mapValues(_.groupBy(dataArr, StoreName), (val) => _.map(val, OrderNumber));
                 Object.keys(groupedData).forEach(key => {
-                    groupedData[key] = groupedData[key].map(val => Number(val.match(/\d+/g)))
+                    groupedData[key] = groupedData[key].map(val => val!= undefined && Number(val.match(/\d+/g)))
                 });
 
                 dbconn.getConnection((err, connection) => {
@@ -264,10 +267,11 @@ function ordersNoSupplierAdded(dataArr) {
 function ordersNotQuoted(dataArr) {
     try {
         console.log('start execution ordersNotQuoted', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.AdminSupplierName] != "" ||
+        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.AdminSupplierName] != "" && item[columnArr.ColumnIndex.ClientName] == "" ||
             item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.supplierName] != "" ||
             item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.OrderProcessingDate] != "" ||
-            item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.PaiByShopOwner] != ""
+            item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.OrderProcessingDate] != "" ||
+            item[columnArr.ColumnIndex.PaiByShopOwner].toLowerCase() == "paid"
         );
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersNotQuoted.csv', csvData);
@@ -325,7 +329,8 @@ function ordersPaymentPending(dataArr) {
 function ordersShortTrackingNumber(dataArr) {
     try {
         console.log('start execution ordersShortTrackingNumber', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderTrackingNumber] && item[columnArr.ColumnIndex.OrderTrackingNumber] != "" && item[columnArr.ColumnIndex.OrderTrackingNumber].length < 10);
+        const status_arr = ["Refund", "Resend"];
+        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderTrackingNumber] && !status_arr.includes(item[columnArr.ColumnIndex.OrderStatus]) && item[columnArr.ColumnIndex.OrderTrackingNumber] != "" && item[columnArr.ColumnIndex.OrderTrackingNumber].length < 10);
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersShortTrackingNumber.csv', csvData);
 
@@ -563,8 +568,8 @@ function ordersMixup() {
                 })
 
                 // remove null data
-                var result = CommonHelpers.removeEmptyValueFromArr(changedData);
-                const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+                // var result = CommonHelpers.removeEmptyValueFromArr(changedData);
+                const csvData = changedData.map(d => d.join(';')).join('\n').replace(/"/g, "'");
                 fs.writeFileSync('./public/checksList/ordersMixup.csv', csvData);
                 console.log('ordersMixup Done!', CommonHelpers.currentDateTime());
             }
