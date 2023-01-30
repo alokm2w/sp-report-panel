@@ -33,7 +33,7 @@ ColumnIndex = {
     is_exchange_order : 30,
     is_shipped : 31,
     CustomerName : 32,
-    PaiByShopOwner : 33,
+    PaidByShopOwner : 33,
     DateofPayment : 34,
     CustomerPhoneNumber : 35,
     CustomerEmail : 36,

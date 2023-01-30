@@ -83,8 +83,8 @@ function orderDuplicate(dataArr) {
         let newData = []
         for (let i = 0; i < duplicateArr.length; i++) {
             for (let j = 0; j < duplicateArr[i].length; j++) {
-                status_arr=['fulfilled', 'cancelled'];
-                if(!status_arr.includes(duplicateArr[i][j][columnArr.ColumnIndex.OrderStatus])){
+                status_arr = ['fulfilled', 'cancelled'];
+                if (!status_arr.includes(duplicateArr[i][j][columnArr.ColumnIndex.OrderStatus])) {
                     newData.push(duplicateArr[i][j]);
                 }
             }
@@ -141,7 +141,7 @@ function ordersMissing() {
                 var StoreName = 6;
                 const groupedData = _.mapValues(_.groupBy(dataArr, StoreName), (val) => _.map(val, OrderNumber));
                 Object.keys(groupedData).forEach(key => {
-                    groupedData[key] = groupedData[key].map(val => val!= undefined && Number(val.match(/\d+/g)))
+                    groupedData[key] = groupedData[key].map(val => val != undefined && Number(val.match(/\d+/g)))
                 });
 
                 dbconn.getConnection((err, connection) => {
@@ -204,7 +204,7 @@ function ordersMissingInfo(dataArr) {
 function ordersNoDateOfPayment(dataArr) {
     try {
         console.log('start execution ordersNoDateOfPayment', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.DateofPayment] == "" && item[columnArr.ColumnIndex.PaiByShopOwner].toLowerCase() == "paid");
+        let result = dataArr.filter(item => item[columnArr.ColumnIndex.DateofPayment] == "" && item[columnArr.ColumnIndex.PaidByShopOwner].toLowerCase() == "paid");
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersNoDateOfPayment.csv', csvData);
 
@@ -217,11 +217,9 @@ function ordersNoDateOfPayment(dataArr) {
 function ordersNoMaxTime(dataArr) {
     try {
         console.log('start execution ordersNoMaxTime', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.DateofPayment.MaxProcessingTime] == "" && item[columnArr.ColumnIndex.DateofPayment.AdminSupplierName] != "" ||
-            item[columnArr.ColumnIndex.DateofPayment.MaxProcessingTime] == "" && item[columnArr.ColumnIndex.DateofPayment.supplierName] != "" ||
-            item[columnArr.ColumnIndex.DateofPayment.MaxDelieveryTime] == "" && item[columnArr.ColumnIndex.DateofPayment.supplierName] != "" ||
-            item[columnArr.ColumnIndex.DateofPayment.MaxDelieveryTime] == "" && item[columnArr.ColumnIndex.DateofPayment.AdminSupplierName] != ""
+        let result = dataArr.filter(item => (item[columnArr.ColumnIndex.MaxProcessingTime] == "" || item[columnArr.ColumnIndex.MaxDelieveryTime] == "" || item[columnArr.ColumnIndex.MaxProcessingTime] == 0 || item[columnArr.ColumnIndex.MaxDelieveryTime] == 0) && item[columnArr.ColumnIndex.AdminSupplierName] != "" && item[columnArr.ColumnIndex.supplierName] != ""
         );
+
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersNoMaxTime.csv', csvData);
 
@@ -234,7 +232,7 @@ function ordersNoMaxTime(dataArr) {
 function ordersNoPaidOnPaidByShopOwner(dataArr) {
     try {
         console.log('start execution ordersNoPaidOnPaidByShopOwner', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.PaiByShopOwner] != undefined && item[columnArr.ColumnIndex.DateofPayment] != "" && item[columnArr.ColumnIndex.PaiByShopOwner].toLowerCase() == "pending");
+        let result = dataArr.filter(item => item[columnArr.ColumnIndex.PaidByShopOwner] != undefined && item[columnArr.ColumnIndex.DateofPayment] != "" && item[columnArr.ColumnIndex.PaidByShopOwner].toLowerCase() == "pending");
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersNoPaidOnPaidByShopOwner.csv', csvData);
 
@@ -267,12 +265,8 @@ function ordersNoSupplierAdded(dataArr) {
 function ordersNotQuoted(dataArr) {
     try {
         console.log('start execution ordersNotQuoted', CommonHelpers.currentDateTime());
-        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.AdminSupplierName] != "" && item[columnArr.ColumnIndex.ClientName] == "" ||
-            item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.supplierName] != "" ||
-            item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.OrderProcessingDate] != "" ||
-            item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && item[columnArr.ColumnIndex.OrderProcessingDate] != "" ||
-            item[columnArr.ColumnIndex.PaiByShopOwner].toLowerCase() == "paid"
-        );
+        let result = dataArr.filter(item => item[columnArr.ColumnIndex.OrderStatus] == "Not quoted" && (item[columnArr.ColumnIndex.AdminSupplierName] != "" || item[columnArr.ColumnIndex.supplierName] != "" || item[columnArr.ColumnIndex.OrderProcessingDate] != "" || item[columnArr.ColumnIndex.PaidByShopOwner].toLowerCase() == "paid"));
+
         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersNotQuoted.csv', csvData);
 
@@ -417,7 +411,7 @@ function ordersDupTrackingNumber(orders) {
         // get duplicate tracking ids record
         orders.forEach((order, i) => {
             if (order[trackingIndex]) {
-                const matchingOrders = orders.slice(i + 1).filter(o => o[trackingIndex] === order[trackingIndex] && o[addressIndex] !== order[addressIndex] && o[cityIndex] !== order[cityIndex] && o[clientIndex] !== order[clientIndex]);
+                const matchingOrders = orders.slice(i + 1).filter(o => o[trackingIndex] === order[trackingIndex] && (o[addressIndex] !== order[addressIndex] || o[cityIndex] !== order[cityIndex] || o[clientIndex] !== order[clientIndex]));
                 if (matchingOrders.length) {
                     duplicates[order[orderIdIndex]] = [order, ...matchingOrders];
                 }
