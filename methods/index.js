@@ -580,7 +580,7 @@ function ordersMixup() {
                     }
                     //Status cancelled
                     if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && item[columnArr.ColumnIndex.OrderStatus].toLowerCase() != 'cancelled') {
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Order status cancelled," : ordertocheck[60] += "Order status cancelled,";
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}`;
                         changedData.push(ordertocheck);
                     }
                 })
