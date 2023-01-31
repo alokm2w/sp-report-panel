@@ -45,18 +45,35 @@ function orderDump(dataArr) {
 
         console.log('grouped', CommonHelpers.currentDateTime());
 
-        i = 0;
+        i = j = k = 0;
         storeWithAvgOrders = [];
+        yesterdayOrders = [];
+        sorted = [];
         for (const store of Object.entries(groupedData)) {
             if (store[0] != "") {
-                sorted = store[1].filter(val => val[columnArr.ColumnIndex.OrderCreatedDate] != "" && CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) >= CommonHelpers.getBackDate(6))
+                store[1].forEach(val => {
+                    if (val[columnArr.ColumnIndex.OrderCreatedDate] != "" && CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) >= CommonHelpers.getBackDate(6)) {
+                        sorted[j] = val;
+                        j++;
+                    }
+
+                    if (val[columnArr.ColumnIndex.OrderCreatedDate] != "" && CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) == CommonHelpers.getBackDate(1)) {
+                        yesterdayOrders[k] = val;
+                        k++;
+                    }
+                });
+
                 avgOrder = sorted.length / 7;
-                storeWithAvgOrders[i] = [store[0], sorted.length, avgOrder.toFixed(2), `https://${store[0]}.myshopify.com/admin/orders`]
-                i++
+                // sorted = store[1].filter(val => val[columnArr.ColumnIndex.OrderCreatedDate] != "" && CommonHelpers.formatDate(val[columnArr.ColumnIndex.OrderCreatedDate]) >= CommonHelpers.getBackDate(6))
+                if (avgOrder > 5 && yesterdayOrders.length == 0) {
+                    storeWithAvgOrders[i] = [store[0], sorted.length, avgOrder.toFixed(2), `https://${store[0]}.myshopify.com/admin/orders`];
+                    i++;
+                }
             }
         }
 
         const csvData = storeWithAvgOrders.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+
         fs.writeFileSync('./public/checksList/ordersDump.csv', csvData);
 
         console.log('Orders Dump Done!', CommonHelpers.currentDateTime());
@@ -153,8 +170,8 @@ function ordersMissing() {
                     // use the connection
                     connection.query(sqlQueries.query.getAllowedMissingOrders, function (err, storesArr) {
                         connection.release();
-                        MissingOrders = []
-                        i = 0
+                        MissingOrders = [];
+                        i = 0;
                         for (const store of Object.keys(groupedData)) {
                             uniqueorderNum = CommonHelpers.removeDuplicateVal(groupedData[store])
 
@@ -171,13 +188,15 @@ function ordersMissing() {
                             }
 
                             let obj = storesArr.find(el => el.store_name == store);
-                            allowedMissing = obj != undefined ? obj.allowed_missing_orders : 0;
-                            if (uniqueorderNum.length > 1 && missingOrderNums.length > 0 && missingOrderNums.length > allowedMissing) {
-                                MissingOrders[i] = [store, max - min, missingOrderNums.length, min, max, missingOrderNums]
+                            allowedMissing = (obj != undefined) ? obj.allowed_missing_orders : 0;
+
+                            if (uniqueorderNum.length > 1 && missingOrderNums.length > allowedMissing) {
+                                MissingOrders[i] = [store, allowedMissing, max - min, missingOrderNums.length, min, max, missingOrderNums]
                                 i++
                             }
                         }
                         const csvData = MissingOrders.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+                        fs.closeSync(fs.openSync('./public/checksList/ordersMissing.csv', 'w'));
                         fs.writeFileSync('./public/checksList/ordersMissing.csv', csvData);
                         console.log('Orders Missing Done!', CommonHelpers.currentDateTime());
                     })

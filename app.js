@@ -159,7 +159,7 @@ function getOrdersCsvData(callback) {
 
 const methods = [ getOrdersCsvData];
 
-cron.schedule('00 03 18 * * *', () => {
+cron.schedule('00 47 08 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);

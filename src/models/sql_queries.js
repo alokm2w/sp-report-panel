@@ -8,7 +8,7 @@ const query = {
 
     getStores: "SELECT id, name, is_deleted FROM store ORDER BY name ASC",
 
-    getAllStoresWithAllowedMissing: "SELECT store_id, store_name, allowed_missing_orders, is_deleted FROM stores ORDER BY store_name ASC",
+    getAllStoresWithAllowedMissing: "SELECT store_id, store_name, allowed_missing_orders, is_deleted FROM stores ORDER BY allowed_missing_orders DESC, store_name ASC",
 
 }
 

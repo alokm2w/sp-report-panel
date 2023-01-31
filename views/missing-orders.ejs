@@ -6,10 +6,11 @@
         <main style="margin-top: 58px;">
             <div class="container-fluid pt-4">
                 <% if (messages.success || messages.error) { %>
-                    <p class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3">
+                    <p
+                        class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3">
                         <%- messages.success ? messages.success : messages.error %>
                     </p>
-                <% } %>
+                    <% } %>
                         <div class="card">
                             <div class="card-header font-weight-bold">
                                 Check Today Orders
@@ -123,6 +124,7 @@
                                         <tr>
                                             <th scope="col">#</th>
                                             <th scope="col">Store Name</th>
+                                            <th scope="col">Allowed Missing Orders</th>
                                             <th scope="col">Total Orders</th>
                                             <th scope="col">No. of Missing Orders</th>
                                             <th scope="col">Min Order Number</th>
@@ -141,12 +143,10 @@
                                                         <%= reports[i][0] ? reports[i][0] : "N/A" ; %>
                                                     </td>
                                                     <td>
-                                                        <%= reports[i][1] ? reports[i][1] : "N/A"
-                                                            ; %>
+                                                        <%= reports[i][1] ? reports[i][1] : "N/A" ; %>
                                                     </td>
                                                     <td>
-                                                        <%= reports[i][2] ? reports[i][2]
-                                                            : "N/A" ; %>
+                                                        <%= reports[i][2] ? reports[i][2] : "N/A" ; %>
                                                     </td>
                                                     <td>
                                                         <%= reports[i][3] ? reports[i][3] : "N/A" ; %>
@@ -156,6 +156,9 @@
                                                     </td>
                                                     <td>
                                                         <%= reports[i][5] ? reports[i][5] : "N/A" ; %>
+                                                    </td>
+                                                    <td>
+                                                        <%= reports[i][6] ? reports[i][6] : "N/A" ; %>
                                                     </td>
                                                 </tr>
                                                 <% } }else{ %>
