@@ -47,6 +47,7 @@ const OrdersDump = require('../src/controllers/OrdersDump');
 const OrdersMissing = require('../src/controllers/OrdersMissing');
 const OrdersMixup = require('../src/controllers/OrdersMixup');
 const sqlQueries = require('../src/models/sql_queries');
+const DownloadReportExcel = require('../src/controllers/DownloadReportExcel');
 
 // Login Method
 app.post('/auth', function (req, res) {
@@ -100,8 +101,11 @@ function checkAuth(req, res, next) {
 }
 
 // Routes
+
+app.get('/excel-report', DownloadReportExcel);
+
 app.get('/duplicate-tracking', checkAuth, OrdersDuplicateController.genOrdersList);
-app.get('/no-tracking-added', checkAuth, NoTrackingController)
+app.get('/no-tracking-added', checkAuth, NoTrackingController);
 app.get('/no-supplier-added', checkAuth, NoSupplierController);
 app.get('/short-tracking-number', checkAuth, ShortTrackingController);
 app.get('/orders-not-quoted', checkAuth, OrdersNotQuoted);
