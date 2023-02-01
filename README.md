@@ -6,4 +6,4 @@
 5. Run the command "npm install" to install packages.
 6. Run the command "npm start" to run the project.
 7. Create directory ordersListcsv, ordersYesterdaycsv in root directory.
-8. Create directory checksList, orderList in public directory.
+8. Create directory checksList, orderList and checksExcel in public directory.
