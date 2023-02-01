@@ -13,6 +13,7 @@ ordersTodaycsv/
 ordersYesterdaycsv/
 public/checksList
 public/orderList
+public/checksExcel
 
 #lock file
 package-lock.json

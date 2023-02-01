@@ -15,6 +15,7 @@
     "body-parser": "^1.20.1",
     "cron": "^2.2.0",
     "csv-parse": "^5.3.3",
+    "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",

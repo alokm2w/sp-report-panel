@@ -142,9 +142,9 @@ function getOrdersCsvData(callback) {
                 method.ordersPaymentPending(dataArr)
                 method.ordersShortTrackingNumber(dataArr)
                 method.ordersTrackingNumberAdded(dataArr)
-                method.ordersDupTrackingNumber(dataArr)
-                method.getStores()
                 method.ordersMissing()
+                method.getStores()
+                method.ordersDupTrackingNumber(dataArr)
                 method.ordersMixup()
                 callback(null, 'Method Call Done!');
             })
@@ -157,9 +157,9 @@ function getOrdersCsvData(callback) {
     }
 }
 
-const methods = [exportcsv, getOrdersCsvData];
+const methods = [getOrdersCsvData];
 
-cron.schedule('00 37 04 * * *', () => {
+cron.schedule('00 19 13 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);
