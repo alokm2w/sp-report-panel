@@ -79,5 +79,17 @@ function removeEmptyValueFromArr(arr){
     return filtered;
 }
 
+const log = (message) => {
+    log(message)
+    const date = new Date();
+    const logMessage = `[${date.toISOString()}] ${message}\n`;
 
-module.exports = { removeDuplicateVal, currentDateTime, getBackDate, formatDate, groupBy, removeEmptyValueFromArr}
+    fs.appendFile('logs.txt', logMessage, (error) => {
+      if (error) {
+        console.error(`Error writing to log file: ${error}`);
+      }
+    });
+  };
+
+
+module.exports = { removeDuplicateVal, currentDateTime, getBackDate, formatDate, groupBy, removeEmptyValueFromArr, log}

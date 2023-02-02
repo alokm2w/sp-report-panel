@@ -30,6 +30,7 @@ function orderCostAdded(dataArr) {
 
         console.log('Orders Cost Added Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -82,6 +83,7 @@ function orderDump(dataArr) {
         fs.writeFileSync('./public/checksList/ordersDump.csv', csvData);
         console.log('Orders Dump Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -118,6 +120,7 @@ function orderDuplicate(dataArr) {
                 console.log('Orders Duplicate Done!', CommonHelpers.currentDateTime());
             });
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -132,6 +135,7 @@ function orderInTransitDateIsShipped(dataArr) {
 
         console.log('Orders In-Transit Date Is Shipped Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -146,6 +150,7 @@ function ordersInTransitDateWithStatus(dataArr) {
 
         console.log('Orders In-Transit Date With Status Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -174,6 +179,7 @@ function ordersMissing() {
 
                 dbconn.getConnection((err, connection) => {
                     if (err) {
+                        CommonHelpers.log(err.message)
                         console.log(err);
                         return;
                     }
@@ -214,6 +220,7 @@ function ordersMissing() {
                 })
             })
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -229,6 +236,7 @@ function ordersMissingInfo(dataArr) {
 
         console.log('Orders Missing Info Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -243,6 +251,7 @@ function ordersNoDateOfPayment(dataArr) {
 
         console.log('Orders No Date Of Payment Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -260,6 +269,7 @@ function ordersNoMaxTime(dataArr) {
 
         console.log('Orders No Max Time Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -274,6 +284,7 @@ function ordersNoPaidOnPaidByShopOwner(dataArr) {
 
         console.log('OrdersNoPaidOnPaidByShopOwner Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -297,6 +308,7 @@ function ordersNoSupplierAdded(dataArr) {
 
         console.log('OrdersNoSupplierAdded!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -314,6 +326,7 @@ function ordersNotQuoted(dataArr) {
 
         console.log('OrdersNotQuoted Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -329,6 +342,7 @@ function ordersNoTrackingAdded(dataArr) {
 
         console.log('OrdersNoTrackingAdded Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -346,6 +360,7 @@ function ordersOnHold(dataArr) {
 
         console.log('OrdersOnHold Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -364,6 +379,7 @@ function ordersPaymentPending(dataArr) {
 
         console.log('ordersPaymentPending Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -378,6 +394,7 @@ function ordersShortTrackingNumber(dataArr) {
 
         console.log('ordersShortTrackingNumber Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -391,6 +408,7 @@ function ordersTrackingNumberAdded(dataArr) {
 
         console.log('ordersTrackingNumberAdded Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }
@@ -428,6 +446,7 @@ function ordersDupTrackingNumber_old(orders) {
         fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
         console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
     } catch (error) {
+        CommonHelpers.log(error.message)
         if (error) console.log(error);
     }
 }
@@ -480,10 +499,16 @@ function ordersDupTrackingNumber(orders) {
         }
 
         fs.writeFile('./public/checksList/ordersDupTrackingNumber.csv', csvData, error => {
-            if (error) console.log(error);
-            else console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
+            if (error) {
+                CommonHelpers.log(error.message);
+                console.log(error);
+            }
+            else {
+                console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
+            }
         });
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(error);
     }
 }
@@ -496,7 +521,10 @@ function getStores() {
 
             data.forEach(function (val, i) {
                 dbconn.query(`SELECT id FROM stores where store_id = ${val.id}`, function (err, results, fields) {
-                    if (err) throw err;
+                    if (err) {
+                        CommonHelpers.log(err.message);
+                        console.log(err);
+                    }
 
                     if (results.length > 0) {
                         CreateOrUpdate = `UPDATE stores SET store_name = '${val.name}', is_deleted = '${val.is_deleted}' WHERE store_id = '${val.id}'`;
@@ -505,14 +533,18 @@ function getStores() {
                     }
 
                     dbconn.query(CreateOrUpdate, function (err, data2) {
-                        if (err) console.log(err);
+                        if (err) {
+                            CommonHelpers.log(err.message);
+                            console.log(err);
+                        }
                     })
                 });
             })
             console.log('Get Store Done!');
         });
     } catch (error) {
-        if (error) console.log(error);
+        CommonHelpers.log(error.message);
+        console.log(error);
     }
 }
 
@@ -550,6 +582,7 @@ function ordersMixup11() {
             }
         ], function (err) {
             if (err) {
+                CommonHelpers.log(err.message);
                 console.log(err);
             } else {
                 console.log("Start filtering mixup check.");
@@ -626,8 +659,20 @@ function ordersMixup11() {
             }
         });
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
+}
+
+function chunkArray(arr, chunkSize) {
+    const chunks = [];
+    let i = 0;
+    const n = arr.length;
+    while (i < n) {
+        chunks.push(arr.slice(i, i + chunkSize));
+        i += chunkSize;
+    }
+    return chunks;
 }
 
 function ordersMixup() {
@@ -663,74 +708,86 @@ function ordersMixup() {
             }
         ], function (err) {
             if (err) {
+                CommonHelpers.log(err.message);
                 console.log(err);
             } else {
                 console.log("Start filtering mixup check.");
                 changedData = [];
+                todayArrChunk = chunkArray(todayArr, 25000);
 
-                for (let i = 0; i < todayArr.length; i++) {
-                    ordertocheck = yesterdayArr.find(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == todayArr[i][columnArr.ColumnIndex.OrderDetailId]);
 
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ShopifyProductId] != todayArr[i][columnArr.ColumnIndex.ShopifyProductId]) { //Shopify product ID
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify product ID changed," : ordertocheck[60] += "Shopify product ID changed,";
-                        // changedData[ordertocheck[0]] = ordertocheck;
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.shopify_variant_id] != todayArr[i][columnArr.ColumnIndex.shopify_variant_id]) { //Shopify_variant_id
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify variant ID changed," : ordertocheck[60] += "Shopify variant ID changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Quantity] != todayArr[i][columnArr.ColumnIndex.Quantity]) { //Quantity
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Quantity changed," : ordertocheck[60] += "Quantity changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Country] != todayArr[i][columnArr.ColumnIndex.Country]) { //Country
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Country changed," : ordertocheck[60] += "Country changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerName] != todayArr[i][columnArr.ColumnIndex.CustomerName]) { //Customer name
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer name changed," : ordertocheck[60] += "Customer name changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerPhoneNumber] != todayArr[i][columnArr.ColumnIndex.CustomerPhoneNumber]) { //Customer phone number
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer phone number changed," : ordertocheck[60] += "Customer phone number changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerEmail] != todayArr[i][columnArr.ColumnIndex.CustomerEmail]) { //Customer Email
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer Email changed," : ordertocheck[60] += "Customer Email changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address1] != todayArr[i][columnArr.ColumnIndex.Address1]) { //Address1
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address1 changed," : ordertocheck[60] += "Address1 changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address2] != todayArr[i][columnArr.ColumnIndex.Address2]) { //Address2
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address2 changed," : ordertocheck[60] += "Address2 changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.City] != todayArr[i][columnArr.ColumnIndex.City]) { //City
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "City changed, " : ordertocheck[60] += "City changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ZipCode] != todayArr[i][columnArr.ColumnIndex.ZipCode]) { //Zip code
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Zip code changed," : ordertocheck[60] += "Zip code changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductName] != todayArr[i][columnArr.ColumnIndex.ProductName]) { //Product name
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product name changed," : ordertocheck[60] += "Product name changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductVariant] != todayArr[i][columnArr.ColumnIndex.ProductVariant]) { //Product variant
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product variant changed," : ordertocheck[60] += "Product variant changed,";
-                        changedData.push(ordertocheck);
-                    }
-                    //Status cancelled
-                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && todayArr[i][columnArr.ColumnIndex.OrderStatus].toLowerCase() != 'cancelled') {
-                        (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${todayArr[i][columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${todayArr[i][columnArr.ColumnIndex.OrderStatus]}`;
-                        changedData.push(ordertocheck);
-                    }
-                    console.log(todayArr[i][columnArr.ColumnIndex.SNo]);
 
+                for (let i = 0; i < todayArrChunk.length; i++) {
+                    async.eachSeries(todayArrChunk[i], function (item, callback) {
+                        ordertocheck = yesterdayArr.find(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == item[columnArr.ColumnIndex.OrderDetailId]);
+
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ShopifyProductId] != item[columnArr.ColumnIndex.ShopifyProductId]) { //Shopify product ID
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify product ID changed," : ordertocheck[60] += "Shopify product ID changed,";
+                            // changedData[ordertocheck[0]] = ordertocheck;
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.shopify_variant_id] != item[columnArr.ColumnIndex.shopify_variant_id]) { //Shopify_variant_id
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify variant ID changed," : ordertocheck[60] += "Shopify variant ID changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Quantity] != item[columnArr.ColumnIndex.Quantity]) { //Quantity
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Quantity changed," : ordertocheck[60] += "Quantity changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Country] != item[columnArr.ColumnIndex.Country]) { //Country
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Country changed," : ordertocheck[60] += "Country changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerName] != item[columnArr.ColumnIndex.CustomerName]) { //Customer name
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer name changed," : ordertocheck[60] += "Customer name changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerPhoneNumber] != item[columnArr.ColumnIndex.CustomerPhoneNumber]) { //Customer phone number
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer phone number changed," : ordertocheck[60] += "Customer phone number changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerEmail] != item[columnArr.ColumnIndex.CustomerEmail]) { //Customer Email
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer Email changed," : ordertocheck[60] += "Customer Email changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address1] != item[columnArr.ColumnIndex.Address1]) { //Address1
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address1 changed," : ordertocheck[60] += "Address1 changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address2] != item[columnArr.ColumnIndex.Address2]) { //Address2
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address2 changed," : ordertocheck[60] += "Address2 changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.City] != item[columnArr.ColumnIndex.City]) { //City
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "City changed, " : ordertocheck[60] += "City changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ZipCode] != item[columnArr.ColumnIndex.ZipCode]) { //Zip code
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Zip code changed," : ordertocheck[60] += "Zip code changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductName] != item[columnArr.ColumnIndex.ProductName]) { //Product name
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product name changed," : ordertocheck[60] += "Product name changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductVariant] != item[columnArr.ColumnIndex.ProductVariant]) { //Product variant
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product variant changed," : ordertocheck[60] += "Product variant changed,";
+                            changedData.push(ordertocheck);
+                        }
+                        //Status cancelled
+                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && item[columnArr.ColumnIndex.OrderStatus].toLowerCase() != 'cancelled') {
+                            (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}`;
+                            changedData.push(ordertocheck);
+                        }
+                        // Call the callback when the iteration is complete
+                        callback();
+                    }, function (err) {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            console.log('ordersMixup Iteration complete', CommonHelpers.currentDateTime());
+                        }
+                    });
                 }
 
                 // remove null data
@@ -741,6 +798,7 @@ function ordersMixup() {
             }
         });
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
     }
 }

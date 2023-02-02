@@ -2,16 +2,17 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const path = require('path');
 const Routes = require('./routes/index');
-const async = require('async');
 var app = express();
 const cron = require("node-cron");
 const { parse } = require("csv-parse");
 const helpers = require('./helpers/csv_helpers');
+const CommonHelpers = require('./helpers/CommonHelpers');
 const sql_queries = require('./src/models/sql_queries')
 const dbconn1 = require('./dbconnection'); // node
 const dbconn2 = require('./dbconnection2'); // sp
 const method = require('./methods/index');
 const fs = require('fs');
+const async = require('async');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 var rimraf = require("rimraf");
 require('dotenv').config();
@@ -37,16 +38,16 @@ function exportcsv(callback) {
     try {
         dbconn2.getConnection((err, connection) => {
             if (err) {
+                CommonHelpers.log(err)
                 console.log(err);
-                return;
             }
             console.log('Connection Established Successfully');
             console.log('start fetching records', helpers.currentDateTime());
             // use the connection
             connection.query(sql_queries.query.get_orders_detail, async function (error, data, fields) {
                 if (err) {
+                    CommonHelpers.log(err)
                     console.log(err);
-                    return;
                 }
                 connection.release();
                 console.log('start execution', helpers.currentDateTime());
@@ -66,7 +67,8 @@ function exportcsv(callback) {
 
                     fs.rename(currentPath, destinationPath, function (err) {
                         if (err) {
-                            throw err
+                            CommonHelpers.log(err)
+                            console.log(err)
                         } else {
                             console.log("Successfully moved the file!", helpers.currentDateTime());
                         }
@@ -99,6 +101,7 @@ function exportcsv(callback) {
             })
         })
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(error.message);
     }
 }
@@ -149,9 +152,11 @@ function getOrdersCsvData(callback) {
                 callback(null, 'Method Call Done!');
             })
             .on("error", function (error) {
+                CommonHelpers.log(error.message)
                 console.log(error.message);
             });
     } catch (error) {
+        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
         callback(null, 'error');
     }
@@ -160,9 +165,10 @@ function getOrdersCsvData(callback) {
 const methods = [
     method.ordersMixup()];
 
-cron.schedule('00 11 12 * * *', () => {
+cron.schedule('00 26 14 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
+            CommonHelpers.log(err.message)
             console.error(err);
         } else {
             console.log(results);
