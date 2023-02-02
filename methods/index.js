@@ -12,6 +12,9 @@ const { parse } = require("csv-parse");
 require('dotenv').config();
 const async = require('async');
 
+/**check status "Fulfilled", "In transit", "Processing"
+ * and "Waiting for tracking update" AND quote_price is not 0
+ * */
 function orderCostAdded(dataArr) {
     try {
         console.log("start execution Order Cost Added", CommonHelpers.currentDateTime());
@@ -31,6 +34,9 @@ function orderCostAdded(dataArr) {
     }
 }
 
+/**check store got 0 orders on yesterday AND
+ * the store got more than 5 average orders a day the week before.
+*/
 function orderDump(dataArr) {
     try {
         console.log('start execution orderDump');
@@ -73,15 +79,14 @@ function orderDump(dataArr) {
         }
 
         const csvData = storeWithAvgOrders.map(d => d.join(';')).join('\n').replace(/"/g, "'");
-
         fs.writeFileSync('./public/checksList/ordersDump.csv', csvData);
-
         console.log('Orders Dump Done!', CommonHelpers.currentDateTime());
     } catch (error) {
         console.log(`Something went wrong! ${error}`)
     }
 }
 
+/**check orders have a the same Store name and Order number.*/
 function orderDuplicate(dataArr) {
     try {
         console.log('start execution orderDuplicate', CommonHelpers.currentDateTime());
@@ -117,6 +122,7 @@ function orderDuplicate(dataArr) {
     }
 }
 
+/**In transit date present, but is_shipped 0*/
 function orderInTransitDateIsShipped(dataArr) {
     try {
         console.log('start execution orderInTransitDateIsShipped', CommonHelpers.currentDateTime());
@@ -130,6 +136,7 @@ function orderInTransitDateIsShipped(dataArr) {
     }
 }
 
+/**In transit date, while still on "waiting for tracking update"*/
 function ordersInTransitDateWithStatus(dataArr) {
     try {
         console.log('start execution ordersInTransitDateWithStatus', CommonHelpers.currentDateTime());
@@ -143,6 +150,10 @@ function ordersInTransitDateWithStatus(dataArr) {
     }
 }
 
+ /**get the min and max order number of each store and should count how many order lines
+  * there are of each store with unique order numbers (1200-A and 1200-B count as 1).
+  * If the number of orders is not the same as the difference between the min and max order number in the system
+  * */
 function ordersMissing() {
     try {
         var filename = process.env.FILENAME_RECENT;
@@ -207,6 +218,8 @@ function ordersMissing() {
     }
 }
 
+/**orders that have no agent support name,
+ * store name or order created date added. */
 function ordersMissingInfo(dataArr) {
     try {
         console.log('start execution ordersMissingInfo', CommonHelpers.currentDateTime());
@@ -220,6 +233,7 @@ function ordersMissingInfo(dataArr) {
     }
 }
 
+/**orders where date of payment is empty, but paid by shop owner is on "Paid". */
 function ordersNoDateOfPayment(dataArr) {
     try {
         console.log('start execution ordersNoDateOfPayment', CommonHelpers.currentDateTime());
@@ -233,6 +247,8 @@ function ordersNoDateOfPayment(dataArr) {
     }
 }
 
+/**order where the max processing time and max delivery time are empty
+ * AND no admin supplier name or  supplier name added.  */
 function ordersNoMaxTime(dataArr) {
     try {
         console.log('start execution ordersNoMaxTime', CommonHelpers.currentDateTime());
@@ -248,6 +264,7 @@ function ordersNoMaxTime(dataArr) {
     }
 }
 
+/**orders where date of payment is not empty, but paid by shop owner is on "Pending" */
 function ordersNoPaidOnPaidByShopOwner(dataArr) {
     try {
         console.log('start execution ordersNoPaidOnPaidByShopOwner', CommonHelpers.currentDateTime());
@@ -261,6 +278,9 @@ function ordersNoPaidOnPaidByShopOwner(dataArr) {
     }
 }
 
+/**Check if all orders that have the status "In transit" or "Processing" or "Resend"
+ * or "waiting for tracking update" or ("Fulfilled" and a tracking number added) have an
+ * admin supplier name and supplier name added. If there is no supplier added, it should be added in the sheet.  */
 function ordersNoSupplierAdded(dataArr) {
     try {
         console.log('start execution ordersNoSupplierAdded', CommonHelpers.currentDateTime());
@@ -281,6 +301,9 @@ function ordersNoSupplierAdded(dataArr) {
     }
 }
 
+/**orders that are on the status "Not quoted" and
+ * Admin supplier name is not empty or supplier name is not empty or
+ * order processing date is not empty or paid by shop owner is "Paid". */
 function ordersNotQuoted(dataArr) {
     try {
         console.log('start execution ordersNotQuoted', CommonHelpers.currentDateTime());
@@ -296,6 +319,7 @@ function ordersNotQuoted(dataArr) {
 }
 
 function ordersNoTrackingAdded(dataArr) {
+    // Check if all orders that have the status "Waiting for tracking update" or "In transit" and no tracking added.
     try {
         console.log('start execution ordersNoTrackingAdded', CommonHelpers.currentDateTime());
         const status_arr = ["Waiting for tracking update", "In transit"];
@@ -309,6 +333,8 @@ function ordersNoTrackingAdded(dataArr) {
     }
 }
 
+/**orders that are on the status "Hold" and
+ *(admin supplier name is not empty or supplier name is not empty) */
 function ordersOnHold(dataArr) {
     try {
         console.log('start execution ordersOnHold', CommonHelpers.currentDateTime());
@@ -324,6 +350,9 @@ function ordersOnHold(dataArr) {
     }
 }
 
+/**orders where the order financial status is not "paid" AND
+ * where the order status is not "Address error", "Cancelled",
+ * "Fulfilled", "Hold", "Not quoted" and "Refund". */
 function ordersPaymentPending(dataArr) {
     try {
         console.log('start execution ordersPaymentPending', CommonHelpers.currentDateTime());
@@ -366,73 +395,16 @@ function ordersTrackingNumberAdded(dataArr) {
     }
 }
 
-// function ordersDupTrackingNumber(a) {
-//     try {
-//         TrackingIndex = 53
-//         AddressIndex = 37
-//         CityIndex = 39
-//         ClientIndex = 56
-//         OrderIdIndex = 1
-
-//         let found = []
-//         let dup = {}
-
-//         console.log('start execution ordersDupTrackingNumber', helpers.currentDateTime());
-//         for (let i = 0; i < a.length; i++) {
-//             if (a[i][TrackingIndex] != "") {
-
-//                 for (let j = i + 1; j < a.length; j++) {
-//                     if (a[i][TrackingIndex] === a[j][TrackingIndex] && !found.includes(j) && a[i][CityIndex] !== a[j][CityIndex] && a[i][AddressIndex] !== a[j][AddressIndex] && a[i][ClientIndex] !== a[j][ClientIndex]) {
-//                         if (i in dup) {
-//                             found.push(j)
-//                             dup[i].push(a[j])
-//                         } else {
-//                             dup[i] = []
-//                             found.push(i)
-//                             found.push(j)
-//                             dup[i].push(a[i])
-//                             dup[i].push(a[j])
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-//         result = [];
-//         i = 0;
-//         for (const item of Object.keys(dup)) {
-//             const capital = dup[item];
-//             for (const duptackorders of capital) {
-//                 result[i] = duptackorders;
-//                 i++
-//             }
-//         }
-
-//         const csvData = result.map(d => d.join(';')).join('\n').replace(/"/g, "'");
-//         fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
-//         console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
-
-//     } catch (error) {
-//         console.log(`Something went wrong! ${error}`)
-//     }
-// }
-
+/**Check Double tracking number but difference in address 1, city and client */
 function ordersDupTrackingNumber(orders) {
     try {
-        const trackingIndex = 53;
-        const addressIndex = 37;
-        const cityIndex = 39;
-        const clientIndex = 56;
-        const orderIdIndex = 1;
-
-        const duplicates = {};
-
         // get duplicate tracking ids record
+        const duplicates = {};
         orders.forEach((order, i) => {
-            if (order[trackingIndex]) {
-                const matchingOrders = orders.slice(i + 1).filter(o => o[trackingIndex] === order[trackingIndex] && (o[addressIndex] !== order[addressIndex] || o[cityIndex] !== order[cityIndex] || o[clientIndex] !== order[clientIndex]));
+            if (order[columnArr.ColumnIndex.OrderTrackingNumber]) {
+                const matchingOrders = orders.slice(i + 1).filter(o => o[columnArr.ColumnIndex.OrderTrackingNumber] === order[columnArr.ColumnIndex.OrderTrackingNumber] && (o[columnArr.ColumnIndex.Address1] !== order[columnArr.ColumnIndex.Address1] || o[columnArr.ColumnIndex.City] !== order[columnArr.ColumnIndex.City] || o[columnArr.ColumnIndex.ClientName] !== order[columnArr.ColumnIndex.ClientName]));
                 if (matchingOrders.length) {
-                    duplicates[order[orderIdIndex]] = [order, ...matchingOrders];
+                    duplicates[order[columnArr.ColumnIndex.OrderID]] = [order, ...matchingOrders];
                 }
             }
         });
@@ -458,6 +430,7 @@ function ordersDupTrackingNumber(orders) {
     }
 }
 
+// get store list and update 
 function getStores() {
     try {
         console.log('start get store', CommonHelpers.currentDateTime());
@@ -485,6 +458,7 @@ function getStores() {
     }
 }
 
+/**check if orders that are from the data of yesterday have the changed data */
 function ordersMixup() {
     try {
         console.log('start execution ordersMixup', helpers.currentDateTime());
