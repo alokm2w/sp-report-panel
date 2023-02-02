@@ -1,10 +1,6 @@
-const express = require('express');
-const bodyparser = require('body-parser');
 const fs = require('fs');
-var app = express();
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
-const columnArr = require('../../helpers/columnArr');
 const { parse } = require("csv-parse");
 const _ = require('lodash');
 
@@ -22,7 +18,6 @@ async function genOrdersList(req, res, next) {
         connection.release();
         filename = './public/checksList/ordersDupTrackingNumber.csv'
         console.log('start execution', helpers.currentDateTime());
-        var arrayOfOrderIds = orderIds.map(val => val.orders_id);
         var dataArr = [];
         var OrderIdIndex = 1
         fs.createReadStream(filename)

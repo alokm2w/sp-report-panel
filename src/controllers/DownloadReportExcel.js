@@ -1,7 +1,8 @@
-const Excel = require('exceljs');
 const fs = require('fs');
 var excel = require('excel4node');
-const parse = require('csv-parser');
+const dbconn = require('../../dbconnection');
+const sqlQueries = require('../models/sql_queries');
+const _ = require('lodash');
 
 const fastcsv = require('fast-csv');
 module.exports = async (req, res) => {
@@ -225,38 +226,56 @@ module.exports = async (req, res) => {
                                 worksheet3.cell(1, 24).string('Order Created Date').style(style);
                                 worksheet3.cell(1, 25).string('Order Processing Date').style(style);
                                 generateExcelSheet(ordersDuplicate, worksheet3);
-                                const ordersDupTrackingNumber = [];
-                                fs.createReadStream('./public/checksList/ordersDupTrackingNumber.csv')
-                                    .pipe(fastcsv.parse({ delimiter: ';' }))
-                                    .on('data', (data) => ordersDupTrackingNumber.push(data))
-                                    .on('end', () => {
-                                        //Header With All columns
-                                        worksheet4.cell(1, 1).string('Order ID').style(style);
-                                        worksheet4.cell(1, 2).string('OrderDetail ID').style(style);
-                                        worksheet4.cell(1, 3).string('Order Number').style(style);
-                                        worksheet4.cell(1, 4).string('Order Status').style(style);
-                                        worksheet4.cell(1, 5).string('Order Financial Status').style(style);
-                                        worksheet4.cell(1, 6).string('Store Name').style(style);
-                                        worksheet4.cell(1, 7).string('Product Name').style(style);
-                                        worksheet4.cell(1, 8).string('Product Variant').style(style);
-                                        worksheet4.cell(1, 9).string('Shopify Product ID').style(style);
-                                        worksheet4.cell(1, 10).string('Quantity').style(style);
-                                        worksheet4.cell(1, 11).string('shopify_variant_id').style(style);
-                                        worksheet4.cell(1, 12).string('supplier name').style(style);
-                                        worksheet4.cell(1, 13).string('quote_price').style(style);
-                                        worksheet4.cell(1, 14).string('Customer Name').style(style);
-                                        worksheet4.cell(1, 15).string('Paid by shop owner').style(style);
-                                        worksheet4.cell(1, 16).string('Max Processing Time').style(style);
-                                        worksheet4.cell(1, 17).string('Max Delievery Time').style(style);
-                                        worksheet4.cell(1, 18).string('Admin supplier name').style(style);
-                                        worksheet4.cell(1, 19).string('Agent support name').style(style);
-                                        worksheet4.cell(1, 20).string('order_tracking_number').style(style);
-                                        worksheet4.cell(1, 21).string('Client Name').style(style);
-                                        worksheet4.cell(1, 22).string('Intransit Date').style(style);
-                                        worksheet4.cell(1, 23).string('Date of payment').style(style);
-                                        worksheet4.cell(1, 24).string('Order Created Date').style(style);
-                                        worksheet4.cell(1, 25).string('Order Processing Date').style(style);
-                                        generateExcelSheet(ordersDupTrackingNumber, worksheet4);
+
+                                dbconn.getConnection((err, connection) => {
+                                    if (err) {
+                                        console.log(err);
+                                        return;
+                                    }
+                                    console.log('Connection Established Successfully');
+                                    // use the connection
+                                    connection.query(sqlQueries.query.getOrdersIds, function (err, orderIds) {
+                                        connection.release();
+
+                                        const ordersDupTrackingNumber = [];
+                                        var OrderIdIndex = 1
+                                        fs.createReadStream('./public/checksList/ordersDupTrackingNumber.csv')
+                                            .pipe(fastcsv.parse({ delimiter: ';' }))
+                                            .on("data", function (data) {
+                                                // Check OrdersId Exist In Ignore List
+                                                if (!_.some(orderIds, { orders_id: data[OrderIdIndex] })) {
+                                                    ordersDupTrackingNumber.push(data)
+                                                }
+                                            })
+                                            .on('end', () => {
+                                                //Header With All columns
+                                                worksheet4.cell(1, 1).string('Order ID').style(style);
+                                                worksheet4.cell(1, 2).string('OrderDetail ID').style(style);
+                                                worksheet4.cell(1, 3).string('Order Number').style(style);
+                                                worksheet4.cell(1, 4).string('Order Status').style(style);
+                                                worksheet4.cell(1, 5).string('Order Financial Status').style(style);
+                                                worksheet4.cell(1, 6).string('Store Name').style(style);
+                                                worksheet4.cell(1, 7).string('Product Name').style(style);
+                                                worksheet4.cell(1, 8).string('Product Variant').style(style);
+                                                worksheet4.cell(1, 9).string('Shopify Product ID').style(style);
+                                                worksheet4.cell(1, 10).string('Quantity').style(style);
+                                                worksheet4.cell(1, 11).string('shopify_variant_id').style(style);
+                                                worksheet4.cell(1, 12).string('supplier name').style(style);
+                                                worksheet4.cell(1, 13).string('quote_price').style(style);
+                                                worksheet4.cell(1, 14).string('Customer Name').style(style);
+                                                worksheet4.cell(1, 15).string('Paid by shop owner').style(style);
+                                                worksheet4.cell(1, 16).string('Max Processing Time').style(style);
+                                                worksheet4.cell(1, 17).string('Max Delievery Time').style(style);
+                                                worksheet4.cell(1, 18).string('Admin supplier name').style(style);
+                                                worksheet4.cell(1, 19).string('Agent support name').style(style);
+                                                worksheet4.cell(1, 20).string('order_tracking_number').style(style);
+                                                worksheet4.cell(1, 21).string('Client Name').style(style);
+                                                worksheet4.cell(1, 22).string('Intransit Date').style(style);
+                                                worksheet4.cell(1, 23).string('Date of payment').style(style);
+                                                worksheet4.cell(1, 24).string('Order Created Date').style(style);
+                                                worksheet4.cell(1, 25).string('Order Processing Date').style(style);
+                                                generateExcelSheet(ordersDupTrackingNumber, worksheet4);
+                                            })
                                         const ordersInTransitDateWithStatus = [];
                                         fs.createReadStream('./public/checksList/ordersInTransitDateWithStatus.csv')
                                             .pipe(fastcsv.parse({ delimiter: ';' }))
@@ -760,9 +779,10 @@ module.exports = async (req, res) => {
                                             });
 
                                     })
-                                    .on("error", function (error) {
-                                        console.log(error.message);
-                                    });
+                                        .on("error", function (error) {
+                                            console.log(error.message);
+                                        });
+                                });
 
                             })
                             .on("error", function (error) {
