@@ -150,10 +150,10 @@ function ordersInTransitDateWithStatus(dataArr) {
     }
 }
 
- /**get the min and max order number of each store and should count how many order lines
-  * there are of each store with unique order numbers (1200-A and 1200-B count as 1).
-  * If the number of orders is not the same as the difference between the min and max order number in the system
-  * */
+/**get the min and max order number of each store and should count how many order lines
+ * there are of each store with unique order numbers (1200-A and 1200-B count as 1).
+ * If the number of orders is not the same as the difference between the min and max order number in the system
+ * */
 function ordersMissing() {
     try {
         var filename = process.env.FILENAME_RECENT;
@@ -396,7 +396,7 @@ function ordersTrackingNumberAdded(dataArr) {
 }
 
 /**Check Double tracking number but difference in address 1, city and client */
-function ordersDupTrackingNumber(orders) {
+function ordersDupTrackingNumber_old(orders) {
     try {
         // get duplicate tracking ids record
         const duplicates = {};
@@ -405,7 +405,9 @@ function ordersDupTrackingNumber(orders) {
                 const matchingOrders = orders.slice(i + 1).filter(o => o[columnArr.ColumnIndex.OrderTrackingNumber] === order[columnArr.ColumnIndex.OrderTrackingNumber] && (o[columnArr.ColumnIndex.Address1] !== order[columnArr.ColumnIndex.Address1] || o[columnArr.ColumnIndex.City] !== order[columnArr.ColumnIndex.City] || o[columnArr.ColumnIndex.ClientName] !== order[columnArr.ColumnIndex.ClientName]));
                 if (matchingOrders.length) {
                     duplicates[order[columnArr.ColumnIndex.OrderID]] = [order, ...matchingOrders];
+                    console.log(i);
                 }
+                console.log(i, CommonHelpers.currentDateTime());
             }
         });
 
@@ -424,13 +426,69 @@ function ordersDupTrackingNumber(orders) {
 
         const csvData = duplicateTrackArr.map(d => d.join(';')).join('\n').replace(/"/g, "'");
         fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
-        console.log('findDuplicateOrders Done!', CommonHelpers.currentDateTime());
+        console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
     } catch (error) {
         if (error) console.log(error);
     }
 }
 
-// get store list and update 
+/**Check Double tracking number but difference in address 1, city and client */
+function ordersDupTrackingNumber(orders) {
+    try {
+        console.log('start ordersDupTrackingNumber!', CommonHelpers.currentDateTime());
+        // get duplicate tracking ids record
+        const duplicates = {};
+        const trackingNumbers = {};
+        for (let i = 0; i < orders.length; i++) {
+            if (orders[i][columnArr.ColumnIndex.OrderTrackingNumber]) {
+                const currentOrder = orders[i];
+                const currentTrackingNumber = currentOrder[columnArr.ColumnIndex.OrderTrackingNumber];
+                if (!trackingNumbers[currentTrackingNumber]) {
+                    trackingNumbers[currentTrackingNumber] = [currentOrder];
+                } else {
+                    const lastOrder = trackingNumbers[currentTrackingNumber][trackingNumbers[currentTrackingNumber].length - 1];
+                    if (lastOrder[columnArr.ColumnIndex.Address1] !== currentOrder[columnArr.ColumnIndex.Address1] || lastOrder[columnArr.ColumnIndex.City] !== currentOrder[columnArr.ColumnIndex.City] || lastOrder[columnArr.ColumnIndex.ClientName] !== currentOrder[columnArr.ColumnIndex.ClientName]) {
+                        duplicates[lastOrder[columnArr.ColumnIndex.OrderID]] = [lastOrder, currentOrder];
+                    }
+                    trackingNumbers[currentTrackingNumber].push(currentOrder);
+                }
+            }
+        }
+
+        // filter duplicate records
+        const duplicateTrackArr = [];
+        let j = 0;
+        Object.values(duplicates).forEach(element => {
+            element.forEach(el => {
+                let isExist = false;
+                for (let k = 0; k < duplicateTrackArr.length; k++) {
+                    if (duplicateTrackArr[k][0] == el[0]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (!isExist) {
+                    duplicateTrackArr[j] = el;
+                    j++;
+                }
+            });
+        });
+
+        let csvData = "";
+        for (let i = 0; i < duplicateTrackArr.length; i++) {
+            csvData += duplicateTrackArr[i].join(';').replace(/"/g, "'") + '\n';
+        }
+
+        fs.writeFile('./public/checksList/ordersDupTrackingNumber.csv', csvData, error => {
+            if (error) console.log(error);
+            else console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// get store list and update
 function getStores() {
     try {
         console.log('start get store', CommonHelpers.currentDateTime());
@@ -459,7 +517,7 @@ function getStores() {
 }
 
 /**check if orders that are from the data of yesterday have the changed data */
-function ordersMixup() {
+function ordersMixup11() {
     try {
         console.log('start execution ordersMixup', helpers.currentDateTime());
 
@@ -557,7 +615,123 @@ function ordersMixup() {
                         (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}`;
                         changedData.push(ordertocheck);
                     }
+                    console.log(item[columnArr.ColumnIndex.SNo]);
                 })
+
+                // remove null data
+                // var result = CommonHelpers.removeEmptyValueFromArr(changedData);
+                const csvData = changedData.map(d => d.join(';')).join('\n').replace(/"/g, "'");
+                fs.writeFileSync('./public/checksList/ordersMixup.csv', csvData);
+                console.log('ordersMixup Done!', CommonHelpers.currentDateTime());
+            }
+        });
+    } catch (error) {
+        console.log(`Something went wrong! ${error}`)
+    }
+}
+
+function ordersMixup() {
+    try {
+        console.log('start execution ordersMixup', helpers.currentDateTime());
+
+        const todayFilePath = process.env.FILENAME_RECENT;
+        const yesterdayFilePath = process.env.FILENAME_YESTERDAY;
+        todayArr = []
+        yesterdayArr = []
+        async.parallel([
+            function (callback) {
+                fs.createReadStream(todayFilePath)
+                    .pipe(parse({ delimiter: ";" }))
+                    .on("data", function (data) {
+                        todayArr.push(data);
+                    })
+                    .on("end", function () {
+                        console.log(`file1 successfully processed`);
+                        callback();
+                    });
+            },
+            function (callback) {
+                fs.createReadStream(yesterdayFilePath)
+                    .pipe(parse({ delimiter: ";" }))
+                    .on("data", function (data) {
+                        yesterdayArr.push(data);
+                    })
+                    .on("end", function () {
+                        console.log(`file2 successfully processed`);
+                        callback();
+                    });
+            }
+        ], function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("Start filtering mixup check.");
+                changedData = [];
+
+                for (let i = 0; i < todayArr.length; i++) {
+                    ordertocheck = yesterdayArr.find(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == todayArr[i][columnArr.ColumnIndex.OrderDetailId]);
+
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ShopifyProductId] != todayArr[i][columnArr.ColumnIndex.ShopifyProductId]) { //Shopify product ID
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify product ID changed," : ordertocheck[60] += "Shopify product ID changed,";
+                        // changedData[ordertocheck[0]] = ordertocheck;
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.shopify_variant_id] != todayArr[i][columnArr.ColumnIndex.shopify_variant_id]) { //Shopify_variant_id
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify variant ID changed," : ordertocheck[60] += "Shopify variant ID changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Quantity] != todayArr[i][columnArr.ColumnIndex.Quantity]) { //Quantity
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Quantity changed," : ordertocheck[60] += "Quantity changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Country] != todayArr[i][columnArr.ColumnIndex.Country]) { //Country
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Country changed," : ordertocheck[60] += "Country changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerName] != todayArr[i][columnArr.ColumnIndex.CustomerName]) { //Customer name
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer name changed," : ordertocheck[60] += "Customer name changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerPhoneNumber] != todayArr[i][columnArr.ColumnIndex.CustomerPhoneNumber]) { //Customer phone number
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer phone number changed," : ordertocheck[60] += "Customer phone number changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerEmail] != todayArr[i][columnArr.ColumnIndex.CustomerEmail]) { //Customer Email
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer Email changed," : ordertocheck[60] += "Customer Email changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address1] != todayArr[i][columnArr.ColumnIndex.Address1]) { //Address1
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address1 changed," : ordertocheck[60] += "Address1 changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address2] != todayArr[i][columnArr.ColumnIndex.Address2]) { //Address2
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address2 changed," : ordertocheck[60] += "Address2 changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.City] != todayArr[i][columnArr.ColumnIndex.City]) { //City
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "City changed, " : ordertocheck[60] += "City changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ZipCode] != todayArr[i][columnArr.ColumnIndex.ZipCode]) { //Zip code
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Zip code changed," : ordertocheck[60] += "Zip code changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductName] != todayArr[i][columnArr.ColumnIndex.ProductName]) { //Product name
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product name changed," : ordertocheck[60] += "Product name changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductVariant] != todayArr[i][columnArr.ColumnIndex.ProductVariant]) { //Product variant
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product variant changed," : ordertocheck[60] += "Product variant changed,";
+                        changedData.push(ordertocheck);
+                    }
+                    //Status cancelled
+                    if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && todayArr[i][columnArr.ColumnIndex.OrderStatus].toLowerCase() != 'cancelled') {
+                        (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${todayArr[i][columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${todayArr[i][columnArr.ColumnIndex.OrderStatus]}`;
+                        changedData.push(ordertocheck);
+                    }
+                    console.log(todayArr[i][columnArr.ColumnIndex.SNo]);
+
+                }
 
                 // remove null data
                 // var result = CommonHelpers.removeEmptyValueFromArr(changedData);

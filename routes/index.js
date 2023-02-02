@@ -102,7 +102,7 @@ function checkAuth(req, res, next) {
 
 // Routes
 
-app.get('/excel-report', DownloadReportExcel);
+app.get('/excel-report', checkAuth, DownloadReportExcel);
 
 app.get('/duplicate-tracking', checkAuth, OrdersDuplicateController.genOrdersList);
 app.get('/no-tracking-added', checkAuth, NoTrackingController);
