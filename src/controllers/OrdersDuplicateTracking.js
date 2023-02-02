@@ -6,7 +6,7 @@ const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
 const columnArr = require('../../helpers/columnArr');
 const { parse } = require("csv-parse");
-
+const _ = require('lodash');
 
 async function genOrdersList(req, res, next) {
 
@@ -28,7 +28,8 @@ async function genOrdersList(req, res, next) {
         fs.createReadStream(filename)
           .pipe(parse({ delimiter: ";" }))
           .on("data", function (row) {
-            if (!arrayOfOrderIds.includes(Number(row[OrderIdIndex]))) {
+            // Check OrdersId Exist In Ignore List
+            if (!_.some(orderIds, { orders_id: row[OrderIdIndex] })) {
               dataArr.push(row);
             }
           })

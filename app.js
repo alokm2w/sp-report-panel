@@ -142,9 +142,9 @@ function getOrdersCsvData(callback) {
                 method.ordersPaymentPending(dataArr)
                 method.ordersShortTrackingNumber(dataArr)
                 method.ordersTrackingNumberAdded(dataArr)
+                method.ordersDupTrackingNumber(dataArr)
                 method.ordersMissing()
                 method.getStores()
-                method.ordersDupTrackingNumber(dataArr)
                 method.ordersMixup()
                 callback(null, 'Method Call Done!');
             })
@@ -159,7 +159,7 @@ function getOrdersCsvData(callback) {
 
 const methods = [getOrdersCsvData];
 
-cron.schedule('00 19 13 * * *', () => {
+cron.schedule('00 43 05 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);
