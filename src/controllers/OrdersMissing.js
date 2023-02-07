@@ -1,16 +1,25 @@
-const helpers = require('../../helpers/CommonHelpers')
+const helpers = require('../../helpers/CommonHelpers');
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
 var _ = require('lodash');
-const { parse } = require("csv-parse");
+const {
+    parse
+} = require("csv-parse");
 const fs = require('fs');
 module.exports = async (req, res) => {
 
     try {
         filename = './public/checksList/ordersMissing.csv'
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders Missing", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
+
         var dataArr = [];
         fs.createReadStream(filename)
-            .pipe(parse({ delimiter: ";" }))
+            .pipe(parse({
+                delimiter: ";"
+            }))
             .on("data", function (row) {
                 dataArr.push(row);
             })

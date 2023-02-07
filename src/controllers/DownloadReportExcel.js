@@ -2,12 +2,16 @@ const fs = require('fs');
 var excel = require('excel4node');
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
+const CommonHelpers = require('../../helpers/CommonHelpers');
 const _ = require('lodash');
 
 const fastcsv = require('fast-csv');
 module.exports = async (req, res) => {
     try {
-
+        process.on('uncaughtException', (error) => {
+            CommonHelpers.logError(type = "Export Excel", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
         // Create a new instance of a Workbook class
         var workbook = new excel.Workbook();
 
@@ -795,6 +799,7 @@ module.exports = async (req, res) => {
                     });
             });
     } catch (error) {
+        CommonHelpers.logError(type = "Download Report Excel", error.message);
         res.status(500).send(`Something went wrong! ${error}`)
     }
 }

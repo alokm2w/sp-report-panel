@@ -19,6 +19,11 @@ module.exports = async (req, res) => {
                 return;
             }
             console.log('Connection Established Successfully');
+            process.on('uncaughtException', (error) => {
+                helpers.logError(type = "Orders Export", error.message)
+                console.error(`uncaughtException: ${error.message}`);
+            });
+
             // use the connection
             connection.query(sql_queries.query.get_orders_detail, async function (error, data, fields) {
                 connection.release();

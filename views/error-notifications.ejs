@@ -1,0 +1,57 @@
+<%# views/error-notifications.ejs %>
+
+    <% extend('layout') %>
+
+        <!--Main layout-->
+        <main style="margin-top: 58px;">
+            <div class="container-fluid pt-4">
+                <% if (messages.success || messages.error) { %>
+                    <p class="alert <% if (messages.success) { %> alert-success <% } else { %> alert-danger <% } %> mb-3" id="alertMessage">
+                        <%- messages.success ? messages.success : messages.error %>
+                    </p>
+                <% } %>
+                <div class="card">
+                    <div class="card-header font-weight-bold">
+                        Notifications
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if(reports.length> 0){ %>
+                                    <% for (var i=0; i < reports.length; i++) { %>
+                                        <% if(reports[i][0] != "") { %>
+                                        <tr>
+                                            <th scope="row">
+                                                <%= i+1 %>
+                                            </th>
+                                            <td>
+                                                <%= reports[i][0] ? reports[i][0] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][1] ? reports[i][1] : "N/A" ; %>
+                                            </td>
+                                            <td>
+                                                <%= reports[i][2] ? reports[i][2] : "N/A" ; %>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                        <% } }else{ %>
+                                            <tr>
+                                                <th scope="row" colspan="4" class="text-center"> Not Available</th>
+                                            </tr>
+                                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!--Main layout-->

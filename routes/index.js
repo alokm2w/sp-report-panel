@@ -48,6 +48,7 @@ const OrdersMissing = require('../src/controllers/OrdersMissing');
 const OrdersMixup = require('../src/controllers/OrdersMixup');
 const sqlQueries = require('../src/models/sql_queries');
 const DownloadReportExcel = require('../src/controllers/DownloadReportExcel');
+const ErrorNotification = require('../src/controllers/ErrorNotification');
 
 // Login Method
 app.post('/auth', function (req, res) {
@@ -101,9 +102,8 @@ function checkAuth(req, res, next) {
 }
 
 // Routes
-
 app.get('/excel-report', checkAuth, DownloadReportExcel);
-
+app.get('/error-notification', checkAuth, ErrorNotification);
 app.get('/duplicate-tracking', checkAuth, OrdersDuplicateController.genOrdersList);
 app.get('/no-tracking-added', checkAuth, NoTrackingController);
 app.get('/no-supplier-added', checkAuth, NoSupplierController);
@@ -186,21 +186,21 @@ app.get('/download-orders-list/:filename?', checkAuth, function (req, res) {
 });
 
 // Api orders zip
-// app.get('/download-orders', function (req, res) {
-//   const clientIp = requestIp.getClientIp(req);
-//   console.log('IP=', clientIp);
-//   if (!process.env.IP_ADDRESS.includes(req.ip) && 0) { // Wrong IP address
-//     res.send('permission denied');
-//   } else {
-//     var files = fs.readdirSync('./ordersList');
-//     storefilename = files[0];
-//     if (typeof (storefilename) != 'undefined') {
-//       res.sendFile(path.resolve("./" + `/ordersList/${storefilename}`));
-//     } else {
-//       res.send(`File Not Available:${storefilename}`);
-//     }
-//   }
-// });
+app.get('/download-orders', function (req, res) {
+  const clientIp = requestIp.getClientIp(req);
+  console.log('IP=', clientIp);
+  if (!process.env.IP_ADDRESS.includes(req.ip) && 0) { // Wrong IP address
+    res.send('permission denied');
+  } else {
+    var files = fs.readdirSync('./ordersList');
+    storefilename = files[0];
+    if (typeof (storefilename) != 'undefined') {
+      res.sendFile(path.resolve("./" + `/ordersList/${storefilename}`));
+    } else {
+      res.send(`File Not Available:${storefilename}`);
+    }
+  }
+});
 
 app.get('/logout', function (req, res) {
   req.session.destroy(function (err) {

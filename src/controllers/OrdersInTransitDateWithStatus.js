@@ -2,19 +2,28 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
 var app = express();
-helpers = require('../../helpers/CommonHelpers');
-const { parse } = require("csv-parse");
+const helpers = require('../../helpers/CommonHelpers');
+const {
+    parse
+} = require("csv-parse");
 
 module.exports = async (req, res) => {
 
     try {
         filename = './public/checksList/ordersInTransitDateWithStatus.csv'
         console.log('start execution', helpers.currentDateTime());
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders In Transit Date With Status", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
+
 
         var dataArr = [];
 
         fs.createReadStream(filename)
-            .pipe(parse({ delimiter: ";" }))
+            .pipe(parse({
+                delimiter: ";"
+            }))
             .on("data", function (row) {
                 dataArr.push(row);
             })

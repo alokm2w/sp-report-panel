@@ -38,7 +38,6 @@ function exportcsv(callback) {
     try {
         dbconn2.getConnection((err, connection) => {
             if (err) {
-                CommonHelpers.log(err)
                 console.log(err);
             }
             console.log('Connection Established Successfully');
@@ -46,7 +45,6 @@ function exportcsv(callback) {
             // use the connection
             connection.query(sql_queries.query.get_orders_detail, async function (error, data, fields) {
                 if (err) {
-                    CommonHelpers.log(err)
                     console.log(err);
                 }
                 connection.release();
@@ -67,7 +65,6 @@ function exportcsv(callback) {
 
                     fs.rename(currentPath, destinationPath, function (err) {
                         if (err) {
-                            CommonHelpers.log(err)
                             console.log(err)
                         } else {
                             console.log("Successfully moved the file!", helpers.currentDateTime());
@@ -101,13 +98,78 @@ function exportcsv(callback) {
             })
         })
     } catch (error) {
-        CommonHelpers.log(error.message)
+        console.log(error.message);
+    }
+}
+
+function exportThreeMonthsCsv() {
+    try {
+        dbconn2.getConnection((err, connection) => {
+            if (err) {
+                console.log(err);
+            }
+
+            console.log('start fetching three months records', helpers.currentDateTime());
+            // use the connection
+            connection.query(sql_queries.query.get_orders_last_three_month, async function (error, data, fields) {
+                if (err) {
+                    console.log(err);
+                }
+                connection.release();
+                console.log('start execution three months csv', helpers.currentDateTime());
+
+                const currentPath = `./ordersThreeMonthsToTodaycsv/ordersThreeMonthsToday.csv`;
+                const destinationPath = "./ordersThreeMonthsToYesterdaycsv/ordersThreeMonthsYesterday.csv";
+
+                fs.rename(currentPath, destinationPath, function (err) {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        console.log("Successfully moved the file!", helpers.currentDateTime());
+                        genrateCSV()
+                    }
+                });
+
+
+                async function genrateCSV() {
+                    console.log('start generating csv', helpers.currentDateTime());
+                    const csvArr = helpers.genOrdersArr(data)
+                    const chunkSize = 500000;
+                    for (let i = 0; i < csvArr.length; i += chunkSize) {
+                        const chunk = csvArr.slice(i, i + chunkSize);
+                        await csvWriter.writeRecords(chunk)
+                    }
+
+                    // convert to zip
+                    helpers.genCsvToZip(zipFileDir, filename)
+                        .then(callback(null, 'csv generated'))
+                }
+
+
+                const csvWriter = createCsvWriter({
+                    path: `ordersThreeMonthsToTodaycsv/ordersThreeMonthsToday.csv`,
+                    header: helpers.csvHeaderArr,
+                    fieldDelimiter: ';'
+                });
+
+                async function genrateCSV() {
+                    console.log('start generating three months csv', helpers.currentDateTime());
+                    const csvArr = helpers.genOrdersArr(data)
+                    const chunkSize = 500000;
+                    for (let i = 0; i < csvArr.length; i += chunkSize) {
+                        const chunk = csvArr.slice(i, i + chunkSize);
+                        await csvWriter.writeRecords(chunk)
+                    }
+                    console.log('3 months csv Done!');
+                }
+            })
+        })
+    } catch (error) {
         console.log(error.message);
     }
 }
 
 dataArr = [];
-
 function getOrdersCsvData(callback) {
     try {
         console.log('start reading file', helpers.currentDateTime());
@@ -152,26 +214,26 @@ function getOrdersCsvData(callback) {
                 callback(null, 'Method Call Done!');
             })
             .on("error", function (error) {
-                CommonHelpers.log(error.message)
                 console.log(error.message);
             });
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
         callback(null, 'error');
     }
 }
 
-const methods = [
-    method.ordersMixup()];
+const methods = [exportcsv, getOrdersCsvData];
 
-cron.schedule('00 26 14 * * *', () => {
+cron.schedule('00 17 18 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
-            CommonHelpers.log(err.message)
             console.error(err);
         } else {
             console.log(results);
         }
     });
+});
+
+cron.schedule('00 16 18 * * *', () => {
+    exportThreeMonthsCsv()
 });

@@ -1,13 +1,19 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 var app = express();
-const helpers = require('../../helpers/CommonHelpers')
+const helpers = require('../../helpers/CommonHelpers');
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
 
 module.exports = async (req, res) => {
     try {
         console.log('start execution', helpers.currentDateTime());
+
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders Allowed Missing", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
+
         dbconn.getConnection((err, connection) => {
             if (err) {
                 console.log(err);

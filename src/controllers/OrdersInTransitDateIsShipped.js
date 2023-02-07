@@ -2,7 +2,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const fs = require('fs');
 var app = express();
-helpers = require('../../helpers/CommonHelpers');
+const helpers = require('../../helpers/CommonHelpers');
 const { parse } = require("csv-parse");
 
 module.exports = async (req, res) => {
@@ -10,6 +10,11 @@ module.exports = async (req, res) => {
     try {
         filename = './public/checksList/orderInTransitDateIsShipped.csv'
         console.log('start execution', helpers.currentDateTime());
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders In Transit Date Shipped", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
+
 
         var dataArr = [];
 

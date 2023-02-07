@@ -11,6 +11,8 @@ node_modules/
 ordersList/
 ordersTodaycsv/
 ordersYesterdaycsv/
+ordersThreeMonthsToTodaycsv/
+ordersThreeMonthsToYesterdaycsv/
 public/checksList
 public/orderList
 public/checksExcel

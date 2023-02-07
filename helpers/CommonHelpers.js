@@ -1,3 +1,4 @@
+const fs = require('fs');
 
 // Get Unique Array
 function removeDuplicateVal(array) {
@@ -79,17 +80,14 @@ function removeEmptyValueFromArr(arr){
     return filtered;
 }
 
-const log = (message) => {
-    log(message)
-    const date = new Date();
-    const logMessage = `[${date.toISOString()}] ${message}\n`;
-
-    fs.appendFile('logs.txt', logMessage, (error) => {
-      if (error) {
-        console.error(`Error writing to log file: ${error}`);
+function logError(type, error) {
+    const logMessage = `${currentDateTime()}[|]${type}[|]${error}\n`;
+    fs.appendFile('error.log', logMessage, (err) => {
+      if (err) {
+        console.error(`Failed to write error log: ${err}`);
       }
     });
-  };
+  }
 
 
-module.exports = { removeDuplicateVal, currentDateTime, getBackDate, formatDate, groupBy, removeEmptyValueFromArr, log}
+module.exports = { removeDuplicateVal, currentDateTime, getBackDate, formatDate, groupBy, removeEmptyValueFromArr, logError}

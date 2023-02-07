@@ -1,8 +1,11 @@
 const fs = require('fs');
 const dbconn = require('../../dbconnection');
 const sqlQueries = require('../models/sql_queries');
-const { parse } = require("csv-parse");
+const {
+  parse
+} = require("csv-parse");
 const _ = require('lodash');
+const helpers = require('../../helpers/CommonHelpers');
 
 async function genOrdersList(req, res, next) {
 
@@ -13,6 +16,10 @@ async function genOrdersList(req, res, next) {
         return;
       }
       console.log('Connection Established Successfully');
+      process.on('uncaughtException', (error) => {
+        helpers.logError(type = "Orders Duplicate Tracking", error.message)
+        console.error(`uncaughtException: ${error.message}`);
+      });
       // use the connection
       connection.query(sqlQueries.query.getOrdersIds, function (err, orderIds) {
         connection.release();
@@ -21,10 +28,14 @@ async function genOrdersList(req, res, next) {
         var dataArr = [];
         var OrderIdIndex = 1
         fs.createReadStream(filename)
-          .pipe(parse({ delimiter: ";" }))
+          .pipe(parse({
+            delimiter: ";"
+          }))
           .on("data", function (row) {
             // Check OrdersId Exist In Ignore List
-            if (!_.some(orderIds, { orders_id: row[OrderIdIndex] })) {
+            if (!_.some(orderIds, {
+                orders_id: row[OrderIdIndex]
+              })) {
               dataArr.push(row);
             }
           })
@@ -46,4 +57,6 @@ async function genOrdersList(req, res, next) {
   }
 }
 
-module.exports = { genOrdersList }
+module.exports = {
+  genOrdersList
+}

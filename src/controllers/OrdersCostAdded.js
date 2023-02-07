@@ -1,7 +1,9 @@
 const express = require('express');
 const fs = require('fs');
-helpers = require('../../helpers/CommonHelpers');
-const { parse } = require("csv-parse");
+const helpers = require('../../helpers/CommonHelpers');
+const {
+    parse
+} = require("csv-parse");
 
 module.exports = async (req, res) => {
     // console.log(req.query.fileName);
@@ -10,10 +12,16 @@ module.exports = async (req, res) => {
         filename = './public/checksList/ordersCostAdded.csv'
         console.log('start execution', helpers.currentDateTime());
 
-        var dataArr = [];
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders Cost Added", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
 
+        var dataArr = [];
         fs.createReadStream(filename)
-            .pipe(parse({ delimiter: ";" }))
+            .pipe(parse({
+                delimiter: ";"
+            }))
             .on("data", function (row) {
                 dataArr.push(row);
             })

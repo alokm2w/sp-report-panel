@@ -6,14 +6,23 @@ const async = require('async');
 var app = express();
 const columnArr = require('../../helpers/columnArr');
 const helpers = require('../../helpers/CommonHelpers');
-const { parse } = require("csv-parse");
+const {
+    parse
+} = require("csv-parse");
 
 module.exports = async (req, res) => {
     try {
         filename = './public/checksList/ordersMixup.csv'
+        process.on('uncaughtException', (error) => {
+            helpers.logError(type = "Orders Mixup", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+        });
+
         var dataArr = [];
         fs.createReadStream(filename)
-            .pipe(parse({ delimiter: ";" }))
+            .pipe(parse({
+                delimiter: ";"
+            }))
             .on("data", function (row) {
                 dataArr.push(row);
             })

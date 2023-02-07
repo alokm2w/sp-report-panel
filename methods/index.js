@@ -18,7 +18,6 @@ const async = require('async');
 function orderCostAdded(dataArr) {
     try {
         console.log("start execution Order Cost Added", CommonHelpers.currentDateTime());
-
         var orderStatus = 4
         var quote_price = 28
 
@@ -30,8 +29,8 @@ function orderCostAdded(dataArr) {
 
         console.log('Orders Cost Added Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Cost Added Filter", error.message)
     }
 }
 
@@ -83,8 +82,8 @@ function orderDump(dataArr) {
         fs.writeFileSync('./public/checksList/ordersDump.csv', csvData);
         console.log('Orders Dump Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Dump Filter", error.message)
     }
 }
 
@@ -120,8 +119,8 @@ function orderDuplicate(dataArr) {
                 console.log('Orders Duplicate Done!', CommonHelpers.currentDateTime());
             });
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Duplicate Filter", error.message)
     }
 }
 
@@ -135,8 +134,8 @@ function orderInTransitDateIsShipped(dataArr) {
 
         console.log('Orders In-Transit Date Is Shipped Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders In Transit Date Is Shipped Filter", error.message)
     }
 }
 
@@ -150,19 +149,25 @@ function ordersInTransitDateWithStatus(dataArr) {
 
         console.log('Orders In-Transit Date With Status Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders In Transit Date With Status Filter", error.message)
     }
 }
 
-/**get the min and max order number of each store and should count how many order lines
- * there are of each store with unique order numbers (1200-A and 1200-B count as 1).
- * If the number of orders is not the same as the difference between the min and max order number in the system
- * */
+ /**get the min and max order number of each store and should count how many order lines
+  * there are of each store with unique order numbers (1200-A and 1200-B count as 1).
+  * If the number of orders is not the same as the difference between the min and max order number in the system
+  * */
 function ordersMissing() {
     try {
         var filename = process.env.FILENAME_RECENT;
         console.log('start execution ordersMissing', CommonHelpers.currentDateTime());
+
+        process.on('uncaughtException', (error) => {
+            CommonHelpers.logError(type = "Orders Missing", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+          });
+
         dataArr = []
         fs.createReadStream(filename)
             .pipe(parse({ delimiter: ";", from_line: 2 }))
@@ -179,7 +184,6 @@ function ordersMissing() {
 
                 dbconn.getConnection((err, connection) => {
                     if (err) {
-                        CommonHelpers.log(err.message)
                         console.log(err);
                         return;
                     }
@@ -220,8 +224,9 @@ function ordersMissing() {
                 })
             })
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Missing", error.message)
+
     }
 }
 
@@ -236,8 +241,8 @@ function ordersMissingInfo(dataArr) {
 
         console.log('Orders Missing Info Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Missing Info Filter", error.message)
     }
 }
 
@@ -251,8 +256,8 @@ function ordersNoDateOfPayment(dataArr) {
 
         console.log('Orders No Date Of Payment Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders No Date Of Payment Filter", error.message)
     }
 }
 
@@ -269,8 +274,8 @@ function ordersNoMaxTime(dataArr) {
 
         console.log('Orders No Max Time Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders No Max Time Filter", error.message)
     }
 }
 
@@ -284,8 +289,8 @@ function ordersNoPaidOnPaidByShopOwner(dataArr) {
 
         console.log('OrdersNoPaidOnPaidByShopOwner Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders No Paid On Paid By ShopOwner Filter", error.message)
     }
 }
 
@@ -308,8 +313,9 @@ function ordersNoSupplierAdded(dataArr) {
 
         console.log('OrdersNoSupplierAdded!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders No Supplier Added Filter", error.message)
+
     }
 }
 
@@ -326,8 +332,8 @@ function ordersNotQuoted(dataArr) {
 
         console.log('OrdersNotQuoted Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Not Quoted Filter", error.message);
     }
 }
 
@@ -342,8 +348,8 @@ function ordersNoTrackingAdded(dataArr) {
 
         console.log('OrdersNoTrackingAdded Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Not Tracking Added Filter", error.message)
     }
 }
 
@@ -360,8 +366,8 @@ function ordersOnHold(dataArr) {
 
         console.log('OrdersOnHold Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "orders On Hold Filter" , error.message)
     }
 }
 
@@ -379,8 +385,8 @@ function ordersPaymentPending(dataArr) {
 
         console.log('ordersPaymentPending Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "orders Payment Pending Filter" , error.message)
     }
 }
 
@@ -394,8 +400,8 @@ function ordersShortTrackingNumber(dataArr) {
 
         console.log('ordersShortTrackingNumber Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "orders Short Tracking Number Filter" , error.message)
     }
 }
 
@@ -408,46 +414,8 @@ function ordersTrackingNumberAdded(dataArr) {
 
         console.log('ordersTrackingNumberAdded Done!', CommonHelpers.currentDateTime());
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
-    }
-}
-
-/**Check Double tracking number but difference in address 1, city and client */
-function ordersDupTrackingNumber_old(orders) {
-    try {
-        // get duplicate tracking ids record
-        const duplicates = {};
-        orders.forEach((order, i) => {
-            if (order[columnArr.ColumnIndex.OrderTrackingNumber]) {
-                const matchingOrders = orders.slice(i + 1).filter(o => o[columnArr.ColumnIndex.OrderTrackingNumber] === order[columnArr.ColumnIndex.OrderTrackingNumber] && (o[columnArr.ColumnIndex.Address1] !== order[columnArr.ColumnIndex.Address1] || o[columnArr.ColumnIndex.City] !== order[columnArr.ColumnIndex.City] || o[columnArr.ColumnIndex.ClientName] !== order[columnArr.ColumnIndex.ClientName]));
-                if (matchingOrders.length) {
-                    duplicates[order[columnArr.ColumnIndex.OrderID]] = [order, ...matchingOrders];
-                    console.log(i);
-                }
-                console.log(i, CommonHelpers.currentDateTime());
-            }
-        });
-
-        // filter duplicate records
-        var duplicateTrackArr = [];
-        j = 0;
-        Object.values(duplicates).forEach(element => {
-            element.forEach(el => {
-                is_exist = duplicateTrackArr.find(innerItem => innerItem[0] == el[0]);
-                if (is_exist == undefined) {
-                    duplicateTrackArr[j] = el;
-                    j++;
-                }
-            });
-        });
-
-        const csvData = duplicateTrackArr.map(d => d.join(';')).join('\n').replace(/"/g, "'");
-        fs.writeFileSync('./public/checksList/ordersDupTrackingNumber.csv', csvData);
-        console.log('ordersDupTrackingNumber Done!', CommonHelpers.currentDateTime());
-    } catch (error) {
-        CommonHelpers.log(error.message)
-        if (error) console.log(error);
+        CommonHelpers.logError(type = "Orders Tracking Number Added Filter" , error.message)
     }
 }
 
@@ -517,14 +485,17 @@ function ordersDupTrackingNumber(orders) {
 function getStores() {
     try {
         console.log('start get store', CommonHelpers.currentDateTime());
+
+        process.on('uncaughtException', (error) => {
+            CommonHelpers.logError(type = "Get Stores", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+          });
+
         dbconn2.query(sqlQueries.query.getStores, function (err, data) {
 
             data.forEach(function (val, i) {
                 dbconn.query(`SELECT id FROM stores where store_id = ${val.id}`, function (err, results, fields) {
-                    if (err) {
-                        CommonHelpers.log(err.message);
-                        console.log(err);
-                    }
+                    if (err) throw err;
 
                     if (results.length > 0) {
                         CreateOrUpdate = `UPDATE stores SET store_name = '${val.name}', is_deleted = '${val.is_deleted}' WHERE store_id = '${val.id}'`;
@@ -533,28 +504,30 @@ function getStores() {
                     }
 
                     dbconn.query(CreateOrUpdate, function (err, data2) {
-                        if (err) {
-                            CommonHelpers.log(err.message);
-                            console.log(err);
-                        }
+                        if (err) console.log(err);
                     })
                 });
             })
             console.log('Get Store Done!');
         });
     } catch (error) {
-        CommonHelpers.log(error.message);
-        console.log(error);
+        CommonHelpers.logError(type = "Get Stores" , error.message)
+        if (error) console.log(error);
     }
 }
 
 /**check if orders that are from the data of yesterday have the changed data */
-function ordersMixup11() {
+function ordersMixup() {
     try {
         console.log('start execution ordersMixup', helpers.currentDateTime());
 
-        const todayFilePath = process.env.FILENAME_RECENT;
-        const yesterdayFilePath = process.env.FILENAME_YESTERDAY;
+        process.on('uncaughtException', (error) => {
+            CommonHelpers.logError(type = "Orders Mixup", error.message)
+            console.error(`uncaughtException: ${error.message}`);
+          });
+
+        const todayFilePath = process.env.FILENAME_TODAY_THREE_MONTH;
+        const yesterdayFilePath = process.env.FILENAME_YESTERDAY_THREE_MONTH;
         todayArr = []
         yesterdayArr = []
         async.parallel([
@@ -582,7 +555,6 @@ function ordersMixup11() {
             }
         ], function (err) {
             if (err) {
-                CommonHelpers.log(err.message);
                 console.log(err);
             } else {
                 console.log("Start filtering mixup check.");
@@ -648,7 +620,6 @@ function ordersMixup11() {
                         (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}`;
                         changedData.push(ordertocheck);
                     }
-                    console.log(item[columnArr.ColumnIndex.SNo]);
                 })
 
                 // remove null data
@@ -659,147 +630,8 @@ function ordersMixup11() {
             }
         });
     } catch (error) {
-        CommonHelpers.log(error.message)
         console.log(`Something went wrong! ${error}`)
-    }
-}
-
-function chunkArray(arr, chunkSize) {
-    const chunks = [];
-    let i = 0;
-    const n = arr.length;
-    while (i < n) {
-        chunks.push(arr.slice(i, i + chunkSize));
-        i += chunkSize;
-    }
-    return chunks;
-}
-
-function ordersMixup() {
-    try {
-        console.log('start execution ordersMixup', helpers.currentDateTime());
-
-        const todayFilePath = process.env.FILENAME_RECENT;
-        const yesterdayFilePath = process.env.FILENAME_YESTERDAY;
-        todayArr = []
-        yesterdayArr = []
-        async.parallel([
-            function (callback) {
-                fs.createReadStream(todayFilePath)
-                    .pipe(parse({ delimiter: ";" }))
-                    .on("data", function (data) {
-                        todayArr.push(data);
-                    })
-                    .on("end", function () {
-                        console.log(`file1 successfully processed`);
-                        callback();
-                    });
-            },
-            function (callback) {
-                fs.createReadStream(yesterdayFilePath)
-                    .pipe(parse({ delimiter: ";" }))
-                    .on("data", function (data) {
-                        yesterdayArr.push(data);
-                    })
-                    .on("end", function () {
-                        console.log(`file2 successfully processed`);
-                        callback();
-                    });
-            }
-        ], function (err) {
-            if (err) {
-                CommonHelpers.log(err.message);
-                console.log(err);
-            } else {
-                console.log("Start filtering mixup check.");
-                changedData = [];
-                todayArrChunk = chunkArray(todayArr, 25000);
-
-
-
-                for (let i = 0; i < todayArrChunk.length; i++) {
-                    async.eachSeries(todayArrChunk[i], function (item, callback) {
-                        ordertocheck = yesterdayArr.find(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == item[columnArr.ColumnIndex.OrderDetailId]);
-
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ShopifyProductId] != item[columnArr.ColumnIndex.ShopifyProductId]) { //Shopify product ID
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify product ID changed," : ordertocheck[60] += "Shopify product ID changed,";
-                            // changedData[ordertocheck[0]] = ordertocheck;
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.shopify_variant_id] != item[columnArr.ColumnIndex.shopify_variant_id]) { //Shopify_variant_id
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify variant ID changed," : ordertocheck[60] += "Shopify variant ID changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Quantity] != item[columnArr.ColumnIndex.Quantity]) { //Quantity
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Quantity changed," : ordertocheck[60] += "Quantity changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Country] != item[columnArr.ColumnIndex.Country]) { //Country
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Country changed," : ordertocheck[60] += "Country changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerName] != item[columnArr.ColumnIndex.CustomerName]) { //Customer name
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer name changed," : ordertocheck[60] += "Customer name changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerPhoneNumber] != item[columnArr.ColumnIndex.CustomerPhoneNumber]) { //Customer phone number
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer phone number changed," : ordertocheck[60] += "Customer phone number changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.CustomerEmail] != item[columnArr.ColumnIndex.CustomerEmail]) { //Customer Email
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Customer Email changed," : ordertocheck[60] += "Customer Email changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address1] != item[columnArr.ColumnIndex.Address1]) { //Address1
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address1 changed," : ordertocheck[60] += "Address1 changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.Address2] != item[columnArr.ColumnIndex.Address2]) { //Address2
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Address2 changed," : ordertocheck[60] += "Address2 changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.City] != item[columnArr.ColumnIndex.City]) { //City
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "City changed, " : ordertocheck[60] += "City changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ZipCode] != item[columnArr.ColumnIndex.ZipCode]) { //Zip code
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Zip code changed," : ordertocheck[60] += "Zip code changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductName] != item[columnArr.ColumnIndex.ProductName]) { //Product name
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product name changed," : ordertocheck[60] += "Product name changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ProductVariant] != item[columnArr.ColumnIndex.ProductVariant]) { //Product variant
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = "Product variant changed," : ordertocheck[60] += "Product variant changed,";
-                            changedData.push(ordertocheck);
-                        }
-                        //Status cancelled
-                        if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.OrderStatus].toLowerCase() == 'cancelled' && item[columnArr.ColumnIndex.OrderStatus].toLowerCase() != 'cancelled') {
-                            (ordertocheck[60] == undefined) ? ordertocheck[60] = `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}` : ordertocheck[60] += `Order status changed from canceled to ${item[columnArr.ColumnIndex.OrderStatus]}`;
-                            changedData.push(ordertocheck);
-                        }
-                        // Call the callback when the iteration is complete
-                        callback();
-                    }, function (err) {
-                        if (err) {
-                            console.error(err);
-                        } else {
-                            console.log('ordersMixup Iteration complete', CommonHelpers.currentDateTime());
-                        }
-                    });
-                }
-
-                // remove null data
-                // var result = CommonHelpers.removeEmptyValueFromArr(changedData);
-                const csvData = changedData.map(d => d.join(';')).join('\n').replace(/"/g, "'");
-                fs.writeFileSync('./public/checksList/ordersMixup.csv', csvData);
-                console.log('ordersMixup Done!', CommonHelpers.currentDateTime());
-            }
-        });
-    } catch (error) {
-        CommonHelpers.log(error.message)
-        console.log(`Something went wrong! ${error}`)
+        CommonHelpers.logError(type = "Orders Mixup" , error.message)
     }
 }
 
