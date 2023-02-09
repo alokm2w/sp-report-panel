@@ -17,7 +17,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 var rimraf = require("rimraf");
 require('dotenv').config();
 process.env.TZ = 'Europe/Amsterdam'; //set timezone
-
+process.setMaxListeners(150);
 app.engine('ejs', require('express-ejs-extend'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -102,13 +102,12 @@ function exportcsv(callback) {
     }
 }
 
-function exportThreeMonthsCsv() {
+function exportThreeMonthsCsv(callback) {
     try {
         dbconn2.getConnection((err, connection) => {
             if (err) {
                 console.log(err);
             }
-
             console.log('start fetching three months records', helpers.currentDateTime());
             // use the connection
             connection.query(sql_queries.query.get_orders_last_three_month, async function (error, data, fields) {
@@ -130,22 +129,6 @@ function exportThreeMonthsCsv() {
                     }
                 });
 
-
-                async function genrateCSV() {
-                    console.log('start generating csv', helpers.currentDateTime());
-                    const csvArr = helpers.genOrdersArr(data)
-                    const chunkSize = 500000;
-                    for (let i = 0; i < csvArr.length; i += chunkSize) {
-                        const chunk = csvArr.slice(i, i + chunkSize);
-                        await csvWriter.writeRecords(chunk)
-                    }
-
-                    // convert to zip
-                    helpers.genCsvToZip(zipFileDir, filename)
-                        .then(callback(null, 'csv generated'))
-                }
-
-
                 const csvWriter = createCsvWriter({
                     path: `ordersThreeMonthsToTodaycsv/ordersThreeMonthsToday.csv`,
                     header: helpers.csvHeaderArr,
@@ -160,7 +143,8 @@ function exportThreeMonthsCsv() {
                         const chunk = csvArr.slice(i, i + chunkSize);
                         await csvWriter.writeRecords(chunk)
                     }
-                    console.log('3 months csv Done!');
+                    console.log('');
+                    callback(null, '3 Months CSV Done!');
                 }
             })
         })
@@ -210,7 +194,6 @@ function getOrdersCsvData(callback) {
                 method.ordersDupTrackingNumber(dataArr)
                 method.getStores()
                 method.ordersMissing()
-                method.ordersMixup()
                 callback(null, 'Method Call Done!');
             })
             .on("error", function (error) {
@@ -222,9 +205,9 @@ function getOrdersCsvData(callback) {
     }
 }
 
-const methods = [exportcsv, getOrdersCsvData];
+const methods = [exportcsv, exportThreeMonthsCsv, getOrdersCsvData, method.ordersMixup];
 
-cron.schedule('00 17 18 * * *', () => {
+cron.schedule('00 18 12 * * *', () => {
     async.series(methods, (err, results) => {
         if (err) {
             console.error(err);
@@ -232,8 +215,4 @@ cron.schedule('00 17 18 * * *', () => {
             console.log(results);
         }
     });
-});
-
-cron.schedule('00 16 18 * * *', () => {
-    exportThreeMonthsCsv()
 });

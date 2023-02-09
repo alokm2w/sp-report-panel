@@ -559,9 +559,17 @@ function ordersMixup() {
             } else {
                 console.log("Start filtering mixup check.");
                 changedData = [];
+                count =0;
                 todayArr.filter(item => { //check or compare data
-                    ordertocheck = yesterdayArr.find(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == item[columnArr.ColumnIndex.OrderDetailId]);
-
+                    ordertocheckIndex = yesterdayArr.findIndex(innerItem => innerItem[columnArr.ColumnIndex.OrderDetailId] == item[columnArr.ColumnIndex.OrderDetailId]);
+                    ordertocheck= yesterdayArr[ordertocheckIndex];
+                    yesterdayArr.splice(ordertocheckIndex, 1);
+                     count++;
+			if (count % 100000 === 0) {
+			   console.log(`Processed ${count} records`);
+			   console.log(`serial number = ${item[columnArr.ColumnIndex.SNo]}`);
+			}
+                    // console.log(item[columnArr.ColumnIndex.SNo]);
                     if (ordertocheck != null && ordertocheck[columnArr.ColumnIndex.ShopifyProductId] != item[columnArr.ColumnIndex.ShopifyProductId]) { //Shopify product ID
                         (ordertocheck[60] == undefined) ? ordertocheck[60] = "Shopify product ID changed," : ordertocheck[60] += "Shopify product ID changed,";
                         // changedData[ordertocheck[0]] = ordertocheck;
